@@ -37,7 +37,7 @@ A simple example application that shows how to use the framework in your own cod
 TemporalNetworksTest
 ---
 
-A set of example data and unit tests to make sure that future updates do not break the correctness of the computations as defined in [1].
+A set of example data and unit tests to make sure that future updates do not break the correctness of the computations as defined in: 
 
 
 [1] *R. Pfitzner, I. Scholtes, A. Garas, C. J. Tessone, F. Schweitzer:* **"Betweenness Preference: Quantifying Correlations in The Topological Dynamics of Temporal Networks"**, arxiv:1208.0588
