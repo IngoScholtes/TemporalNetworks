@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{50951D5C-550F-4C13-B7A8-277B8CF12B27}"
 	ProjectSection(SolutionItems) = preProject
 		Local.testsettings = Local.testsettings
+		README.md = README.md
 		TemporalNetworks.vsmdi = TemporalNetworks.vsmdi
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection

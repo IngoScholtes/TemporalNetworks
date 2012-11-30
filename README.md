@@ -3,7 +3,11 @@ TemporalNetworks
 
 This project implements an Open Source C# library as well as a set of command line tools for the analysis of dynamic network structures, so-called temporal networks. The code particularly focuses on the computation of so-called betweenness preference, which has been introduced in [1].  
 
-The command line tools and the library can be used to compare weighted aggregate networks from temporal sequences of edges, create tikz figures of temporal unfoldings of  dynamic networks, compute betweenness preference distributions of empirical networks and generate null model realizations based on empirical data.
+![Screenshot of command line tools](https://dl.dropbox.com/u/10482894/Screenshot_TempNet.png)
+
+The command line tools and the library can be used to compare weighted aggregate networks from temporal sequences of edges, create tikz figures of temporal unfoldings of  dynamic networks, compute betweenness preference distributions of empirical networks and generate null model realizations based on empirical data. An example for a time-unfolded network with 6 nodes and 10 time steps is shown in the following figure.
+
+![Example output of time-unfolded representation of temporal network with 6 nodes and 10 time steps](https://dl.dropbox.com/u/10482894/TikzOutput_TempNet.png)
 
 Main features
 ---
