@@ -32,8 +32,6 @@ namespace TempNet
                 return;
             }
 
-            char split_char = ' ';
-
             bool undirected = false;
             if (args.Length >= 5)
                 undirected = bool.Parse(args[4]);
@@ -45,7 +43,7 @@ namespace TempNet
             TemporalNetwork output = null;
 
             Console.Write("Reading temporal network as {0} network...", undirected ? "undirected" : "directed");
-            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[2], undirected: undirected, split_char: split_char);
+            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[2], undirected: undirected);
             Console.WriteLine(" done.");
 
             Console.Write("Extracting two paths and building aggregate network...");

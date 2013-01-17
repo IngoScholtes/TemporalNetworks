@@ -213,7 +213,7 @@ namespace TemporalNetworks
         /// <param name="header">Whether or not there is a header line that shall be ignored</param>
         /// <param name="split_char">The character used to separate columns in each line</param>
         /// <returns>An instance of a temporal network corresponding to the input sequence</returns>
-        public static TemporalNetwork ReadFromFile(string path, char split_char = ' ', bool undirected = false)
+        public static TemporalNetwork ReadFromFile(string path, bool undirected = false)
         {
             TemporalNetwork temp_net = new TemporalNetwork();
 
@@ -225,7 +225,20 @@ namespace TemporalNetworks
                 return temp_net;
 
             // Extract header
-            string[] header = lines[0].Split(split_char);
+            char[] split_chars = new char[] {' ', '\t',';',','};
+            char split_char = ' ';
+
+            // Detect the correct separator character inteh CSV format
+            string[] header = null;
+            foreach(char c in split_chars)
+            {                
+                header = lines[0].Split(c);
+                if (header.Length >= 2 && header.Contains("node1") && header.Contains("node2"))
+                {
+                    split_char = c;
+                    break;
+                }
+            }
 
             if (header.Length < 2)
                 return temp_net;
