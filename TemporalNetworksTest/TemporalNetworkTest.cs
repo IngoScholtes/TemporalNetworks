@@ -119,5 +119,18 @@ namespace TemporalNetworksTest
             Assert.AreEqual(test.AggregateNetwork[new Tuple<string, string>("c", "b")], 1d / 3d);
             Assert.AreEqual(test.AggregateNetwork[new Tuple<string, string>("c", "a")], 1d / 3d);                        
         }
+
+        /// <summary>
+        /// A test for the save and load procedures
+        /// </summary>
+        [TestMethod()]
+        public void LoadTemporalNetworkTest()
+        {
+            TemporalNetwork net = ExampleData.GetTestNetwork();
+            TemporalNetwork.SaveToFile("test.net", net);
+
+            TemporalNetwork net2 = TemporalNetwork.ReadFromFile("test.net");
+            Assert.AreEqual(net, net2);
+        }
     }
 }

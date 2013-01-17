@@ -17,12 +17,13 @@ namespace TempNet
             }
 
             bool undirected = false;
+            char split_char = ' ';
 
             if (args.Length == 3)
                 undirected = Boolean.Parse(args[2]);
 
             Console.Write("Reading temporal network as {0} network...", undirected?"undirected":"directed");
-            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected:undirected);
+            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected:undirected, split_char: split_char);
             Console.WriteLine("done.");
 
             int interactions_total = temp_net.EdgeCount;
