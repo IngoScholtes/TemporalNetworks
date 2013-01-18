@@ -136,10 +136,10 @@ namespace TemporalNetworks
 
                                 _twoPathWeights[two_path] += 1d / (indeg_v * outdeg_v);
 
-                                if (!two_path_edges.ContainsKey(t))
-                                    two_path_edges[t] = new List<Tuple<string, string>>();
                                 if (!two_path_edges.ContainsKey(prev_t))
                                     two_path_edges[prev_t] = new List<Tuple<string, string>>();
+                                if (!two_path_edges.ContainsKey(t))
+                                    two_path_edges[t] = new List<Tuple<string, string>>();
 
                                 // Important: In the reduced temporal network, we only use edges belonging to two paths. Each edge is added only once, 
                                 // even if it belongs to several two paths (this is the case for continued two paths as well as for two paths with multiple edges

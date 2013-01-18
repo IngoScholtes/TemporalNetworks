@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TemporalNetworks", "TemporalNetworks\TemporalNetworks.csproj", "{FFB2D65C-DDBB-4385-A964-7D6461FD43E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempNet", "TempNet\TempNet.csproj", "{AEC52EB4-0643-4AE9-8E76-F5FF46B7B05F}"
