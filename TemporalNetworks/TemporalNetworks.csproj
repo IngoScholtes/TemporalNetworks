@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="BetweennessPref.cs" />
     <Compile Include="MathHelper.cs" />
+    <Compile Include="RandomWalk.cs" />
     <Compile Include="SISpreading.cs" />
     <Compile Include="TemporalNetwork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

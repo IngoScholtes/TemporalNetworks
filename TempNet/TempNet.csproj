@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -48,6 +48,7 @@
     <Compile Include="Fn_Distribution.cs" />
     <Compile Include="Fn_Example.cs" />
     <Compile Include="Fn_Match.cs" />
+    <Compile Include="Fn_RandomWalk.cs" />
     <Compile Include="Fn_Shuffle.cs" />
     <Compile Include="Fn_Spreading.cs" />
     <Compile Include="Fn_Stats.cs" />
