@@ -18,7 +18,7 @@ namespace TempNet
                 Console.WriteLine("\n[function] can be any of the following ...\n");
                 Console.WriteLine("\t\t distribution \t Compute the betweenness preference distribution of a temporal network");
                 Console.WriteLine("\t\t spreading \t Run SI spreading process on a temporal network");
-                Console.WriteLine("\t\t randomwalk \t Run random walk process on an aggregate network");
+                Console.WriteLine("\t\t rw \t Run random walk process on a weighted aggregate network");
                 Console.WriteLine("\t\t tikz \t\t Generate a tikz visualization of a time-unfolded temporal network");
                 Console.WriteLine("\t\t example \t Create a simple example for a temporal network");
                 Console.WriteLine("\t\t match \t\t Check whether the aggregated version of two temporal networks are identical");
@@ -35,7 +35,7 @@ namespace TempNet
                 Fn_Distribution.Run(args);
             else if (function == "spreading")
                 Fn_Spreading.Run(args);
-            else if (function == "randomwalk")
+            else if (function == "rw")
                 Fn_RandomWalk.Run(args);
             else if (function == "tikz")
                 Fn_Tikz.Run(args);

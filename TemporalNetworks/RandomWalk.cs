@@ -12,7 +12,7 @@ namespace TemporalNetworks
         /// </summary>
         private static Random rand = new Random();
 
-        public static IDictionary<int, int> RunRandomWalker(TemporalNetwork temp_net, bool betwPrefPres = false)
+        public static IDictionary<int, int> RunRandomWalker(TemporalNetwork temp_net, bool weighted = false, bool betwPrefPres = false)
         {
             Dictionary<string, bool> visited = new Dictionary<string, bool>();
             Dictionary<int, int> uniqueVisitations = new Dictionary<int, int>(temp_net.Count);
@@ -25,7 +25,7 @@ namespace TemporalNetworks
             while (uniqueVisitations[t] < temp_net.AggregateNetwork.VertexCount)
             {
                 t++;
-                string next = temp_net.AggregateNetwork.GetRandomPredecessor(currentNode);
+                string next = temp_net.AggregateNetwork.GetRandomSuccessor(currentNode, weighted);
                 if (!visited.ContainsKey(next))
                     visited[next] = true;
                 uniqueVisitations[t] = visited.Keys.Count;

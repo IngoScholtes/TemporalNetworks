@@ -19,6 +19,7 @@ namespace TemporalNetworks
         private List<string> _vertices;
         private Dictionary<string, List<string>> _successors;
         private Dictionary<string, List<string>> _predecessors;
+        Random r;
 
         /// <summary>
         /// Creates an empty weighted network
@@ -28,6 +29,7 @@ namespace TemporalNetworks
             _vertices = new List<string>();
             _successors = new Dictionary<string, List<string>>();
             _predecessors = new Dictionary<string, List<string>>();
+            r = new Random();
         }
 
         /// <summary>
@@ -108,7 +110,6 @@ namespace TemporalNetworks
         /// <returns>A random node name</returns>
         public string GetRandomPredecessor(string v)
         {
-            Random r = new Random();
             return _predecessors[v][r.Next(_predecessors[v].Count)];
         }
 
@@ -117,10 +118,27 @@ namespace TemporalNetworks
         /// </summary>
         /// <param name="v">The node for which a random predecessor will be returned</param>
         /// <returns>A random node name</returns>
-        public string GetRandomSuccessor(string v)
+        public string GetRandomSuccessor(string v, bool weighted = false)
         {
-            Random r = new Random();
-            return _successors[v][r.Next(_successors[v].Count)];
+            if (!weighted)
+                return _successors[v][r.Next(_successors[v].Count)];
+            else
+            {
+                Dictionary<double, string> cumulative = new Dictionary<double, string>();
+                double sum = 0d;
+                foreach (string n in _successors[v])
+                {
+                    cumulative[sum + GetWeight(v, n)/GetCumulativeOutWeight(v)] = n;
+                    sum += GetWeight(v, n) / GetCumulativeOutWeight(v);
+                }
+                double dice = r.NextDouble();
+                for (int i = 0; i < _successors[v].Count; i++)
+                {
+                    if(cumulative.Keys.ElementAt(i)>dice)
+                        return cumulative.Values.ElementAt(i);
+                }
+                throw new Exception("This should never happen!");
+            }
         }
 
         /// <summary>
