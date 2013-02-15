@@ -37,7 +37,7 @@ namespace TempNet
             temp_net.StripEdgesToTwoPaths = false;
             Console.WriteLine("done.");
 
-            Console.Write("Running random walk on temporal network with length T={0} ...", temp_net.Length);
+            Console.Write("Running random walk on temporal network with length T={0}, preserving bwp = {1}...", temp_net.Length, betwprefpres);
             IDictionary<int, int> output = RandomWalk.RunRandomWalker(temp_net, true, betwprefpres);
             Console.WriteLine(" done.");
 

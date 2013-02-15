@@ -18,7 +18,7 @@ namespace TempNet
                 Console.WriteLine("\n[function] can be any of the following ...\n");
                 Console.WriteLine("\t\t distribution \t Compute the betweenness preference distribution of a temporal network");
                 Console.WriteLine("\t\t spreading \t Run SI spreading process on a temporal network");
-                Console.WriteLine("\t\t rw \t Run random walk process on a weighted aggregate network");
+                Console.WriteLine("\t\t rw \t\t Run random walk process on a weighted aggregate network");
                 Console.WriteLine("\t\t tikz \t\t Generate a tikz visualization of a time-unfolded temporal network");
                 Console.WriteLine("\t\t example \t Create a simple example for a temporal network");
                 Console.WriteLine("\t\t match \t\t Check whether the aggregated version of two temporal networks are identical");
