@@ -228,7 +228,7 @@ namespace TemporalNetworks
             char[] split_chars = new char[] {' ', '\t',';',','};
             char split_char = ' ';
 
-            // Detect the correct separator character inteh CSV format
+            // Detect the correct separator character in CSV format
             string[] header = null;
             foreach(char c in split_chars)
             {                
@@ -263,19 +263,14 @@ namespace TemporalNetworks
             {
                 string[] components = lines[i].Split(split_char);
                 if (components[source_ix] != "" && components[target_ix] != "")
+                {
                     // If there is no explicit time, just consider each edge occuring at consecutive time steps
-                    if (time_ix < 0)
-                    {
-                        temp_net.AddTemporalEdge(i, components[source_ix], components[target_ix]);
-                        if (undirected)
-                            temp_net.AddTemporalEdge(i, components[target_ix], components[source_ix]);
-                    }
-                    else
-                    {
-                        temp_net.AddTemporalEdge(int.Parse(components[time_ix]), components[source_ix], components[target_ix]);
-                        if (undirected)
-                            temp_net.AddTemporalEdge(int.Parse(components[time_ix]), components[target_ix], components[source_ix]);
-                    }
+                    int t = time_ix >=0 ? int.Parse(components[time_ix]) : i;
+
+                    temp_net.AddTemporalEdge(t, components[source_ix], components[target_ix]);
+                    if (undirected)
+                        temp_net.AddTemporalEdge(t, components[target_ix], components[source_ix]);
+                }
 
             }
             return temp_net;
