@@ -97,6 +97,8 @@ namespace TemporalNetworksTest
             Assert.AreEqual(actual[index_pred["f"], index_succ["g"]], 0d);
             Assert.AreEqual(actual[index_pred["g"], index_succ["g"]], 0d);
 
+            Assert.AreEqual(BetweennessPref.GetBetweennessPref(temp_net, "e"), 1.2954618442383219d);
+
             actual = BetweennessPref.GetBetweennessPrefMatrix(temp_net, "f", out index_pred, out index_succ);
 
             Assert.IsNotNull(index_pred);
