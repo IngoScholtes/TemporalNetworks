@@ -79,6 +79,45 @@ namespace TemporalNetworks
         }
 
         /// <summary>
+        /// </summary>
+        /// <param name="aggregationSize"></param>
+        public void AggregateTime(int aggregationWindow = 1)
+        {
+            if (aggregationWindow == 1)
+                return;
+
+            Dictionary<int, List<Tuple<string, string>>> new_dict = new Dictionary<int, List<Tuple<string, string>>>();
+            int min = Keys.Min();
+
+            foreach (var t in Keys)
+            {
+                int new_t = (t - min) / aggregationWindow;
+                if(!new_dict.ContainsKey(new_t))
+                    new_dict[new_t] = new List<Tuple<string,string>>();
+                new_dict[new_t].AddRange(this[t]);
+            }
+
+            this.Clear();
+            foreach (var t in new_dict.Keys)
+            {
+                if (!this.ContainsKey(t))
+                    this[t] = new List<Tuple<string, string>>();
+                foreach (var edge in new_dict[t])
+                    if (!this[t].Contains(edge))
+                        this[t].Add(edge);
+            }
+
+            ReduceToTwoPaths();
+        }
+
+        public class CompareInts : IComparer<int> {
+            public int Compare(int t1, int t2)
+            {
+                return t1 - t2;
+            }
+        }
+
+        /// <summary>
         /// This methods extracts all two paths from the sequence of edges in the temporal network (two-paths according to eq. (1) of the paper).
         /// It will also extract the correct (statistical) weights for both the two paths and the edges in the aggregate network. 
         /// After this method returns, the weighted TwoPaths list as well as the weighted AggregateNetwork are available. 
@@ -96,8 +135,10 @@ namespace TemporalNetworks
 
             int prev_t = -1;
 
+            var ordered_time = Keys.OrderBy(k => k, new CompareInts());
+
             // Walk through time ... 
-            foreach(int t in Keys)
+            foreach(int t in ordered_time)
             {
                 if (prev_t == -1)
                     prev_t = t; // We skip the first time step and just set the prev_t index ... 
@@ -115,7 +156,7 @@ namespace TemporalNetworks
                             {
                                 // Use notation from the paper
                                 string s = in_edge.Item1;
-                                string v = in_edge.Item2;                                
+                                string v = in_edge.Item2;
                                 string d = out_edge.Item2;
 
                                 string two_path = s + "," + v + "," + d;
@@ -123,13 +164,17 @@ namespace TemporalNetworks
                                 double indeg_v = 0d;
                                 double outdeg_v = 0d;
 
-                                foreach (var edge in this[prev_t])
-                                    if (edge.Item2 == v)
-                                        indeg_v++;
+                                indeg_v = (from x in this[prev_t].AsParallel() where x.Item2 == v select x).Count();
 
-                                foreach (var edge in this[t])
-                                    if (edge.Item1 == v)
-                                        outdeg_v++;
+                                //foreach (var edge in this[prev_t])
+                                 //   if (edge.Item2 == v)
+                                 //       indeg_v++;
+
+                                outdeg_v = (from x in this[t].AsParallel() where x.Item1 == v select x).Count();
+
+                                //foreach (var edge in this[t])
+                                 //   if (edge.Item1 == v)
+                                  //      outdeg_v++;
 
                                 if(!_twoPathWeights.ContainsKey(two_path))
                                     _twoPathWeights[two_path] = 0d;

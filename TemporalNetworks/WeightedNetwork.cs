@@ -120,6 +120,9 @@ namespace TemporalNetworks
         /// <returns>A random node name</returns>
         public string GetRandomSuccessor(string v, bool weighted = false)
         {
+            if (GetOutdeg(v) == 0)
+                return null;
+
             if (!weighted)
                 return _successors[v][r.Next(_successors[v].Count)];
             else

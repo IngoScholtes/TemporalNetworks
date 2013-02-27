@@ -132,5 +132,13 @@ namespace TemporalNetworksTest
             TemporalNetwork net2 = TemporalNetwork.ReadFromFile("test.net");
             Assert.AreEqual(net, net2);
         }
+
+        [TestMethod()]
+        public void AggregateTimeTest()
+        {
+            TemporalNetwork net = ExampleData.GetTestNetwork3();
+            net.AggregateTime(3);
+
+        }
     }
 }

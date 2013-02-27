@@ -24,27 +24,12 @@ namespace TemporalNetworks
         /// <param name="use_weights">Whether or not to consider the weights in the random walk transition probabilities</param>
         /// <returns>The number of visited nodes in each time step</returns>
         public static IDictionary<int, int> RunRandomWalk(WeightedNetwork network, bool use_weights = false)
-        {
+        {            
             return Walk(network, use_weights: use_weights, use_bwp: false);
         }
 
         public static IDictionary<int, int> RunRandomWalkSyntheticBWP(WeightedNetwork network, double min_prob)
-        {
-            // Make network undirected
-            Console.Write("Making network undirected...");
-            foreach (string v in network.Vertices)
-            {
-                var successors = network.GetSuccessors(v);
-                var predecessors = network.GetPredecessors(v);
-                foreach (string s in successors)
-                    if (!predecessors.Contains(s))
-                        network.AddEdge(s, v);
-                foreach (string p in predecessors)
-                    if (!successors.Contains(p))
-                        network.AddEdge(v, p);
-            }
-            Console.WriteLine("done.");
-
+        {           
             // Generate betweenness preference matrices
             Console.Write("Generating synthetic betweenness preference...");
             foreach (string v in network.Vertices)
@@ -149,7 +134,9 @@ namespace TemporalNetworks
             //    passages[e] = 0;
 
             // Use a random node and a random predecessor for initialization
-            string v = network.RandomNode;
+            string v = null;
+            while(v == null || network.GetIndeg(v)==0 || network.GetOutdeg(v)==0)
+                v = network.RandomNode;
             string s = network.GetRandomPredecessor(v);
             visited[v] = true;
             int t = 0;
@@ -177,15 +164,22 @@ namespace TemporalNetworks
                     }
 
                     // If there is nowhere to go from v coming from s (i.e. all entries in the matrix column are zero) generate a new initial node
+
                     if (sum == 0)
                     {
-                        d = network.RandomNode;
+#if RESTART_ENABLED
+                        d = null;
+                        while (d == null || network.GetIndeg(d) == 0 || network.GetOutdeg(d) == 0)
+                            d = network.RandomNode;
                         v = network.GetRandomPredecessor(d);
+#endif
+                        d = network.GetRandomSuccessor(v, use_weights);
                         restarts++;
                     }
                     // Sample a target with correct probabilities
                     else
                     {
+
                         // Create cumulative probabilities
                         double c = 0d;
                         Dictionary<double, string> cumulative = new Dictionary<double, string>();
@@ -209,6 +203,8 @@ namespace TemporalNetworks
                                 break;
                             }
                         }
+                       if (rand.NextDouble() <= 0.01d)
+                            d = network.GetRandomSuccessor(v, use_weights);
                     }
                 }
                 if (!visited.ContainsKey(d))

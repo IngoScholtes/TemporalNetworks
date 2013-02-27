@@ -12,14 +12,16 @@ namespace TempNet
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Usage: TempNet stats [temporal_network_file] [undirected=false]");
+                Console.WriteLine("Usage: TempNet stats [temporal_network_file] [aggregationWindow=1] [undirected=false]");
                 return;
             }
 
             bool undirected = false;
-
-            if (args.Length == 3)
-                undirected = Boolean.Parse(args[2]);
+            int aggregationWindow = 1;
+            if (args.Length >= 3)
+                aggregationWindow = Int32.Parse(args[2]);
+            if (args.Length >= 4)
+                undirected = Boolean.Parse(args[3]);
 
             Console.Write("Reading temporal network as {0} network...", undirected?"undirected":"directed");
             TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected:undirected);
@@ -27,15 +29,16 @@ namespace TempNet
 
             int interactions_total = temp_net.EdgeCount;
 
-            Console.WriteLine("\nTemporal network");
+            Console.WriteLine("\nOriginal Temporal network");
             Console.WriteLine("=================");
             Console.WriteLine("Number of nodes:                  \t{0}", temp_net.VertexCount);
             Console.WriteLine("Number of time steps:             \t{0}", temp_net.Length);
             Console.WriteLine("Number of interactions:           \t{0}", interactions_total);
             Console.WriteLine("Highest granularity               \t{0} edges per time step", temp_net.MaxGranularity);
             Console.WriteLine("Lowest granularity                \t{0} edges per time step", temp_net.MinGranularity);
+            
+            temp_net.AggregateTime(aggregationWindow);            
 
-            temp_net.ReduceToTwoPaths();
             Console.WriteLine("Fraction of two-path interactions \t{0:0.00}", (double) temp_net.AggregateNetwork.CumulativeWeight/(double) interactions_total);
 
             Console.WriteLine("\nAggregate network (only nodes and edges contributing to two-paths)");
