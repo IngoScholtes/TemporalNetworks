@@ -19,6 +19,8 @@ namespace TemporalNetworks
         private List<string> _vertices;
         private Dictionary<string, List<string>> _successors;
         private Dictionary<string, List<string>> _predecessors;
+        private Dictionary<string, double> _cumulativeOutWeight;
+        private Dictionary<string, double> _cumulativeInWeight;
         Random r;
 
         /// <summary>
@@ -29,6 +31,8 @@ namespace TemporalNetworks
             _vertices = new List<string>();
             _successors = new Dictionary<string, List<string>>();
             _predecessors = new Dictionary<string, List<string>>();
+            _cumulativeInWeight = new Dictionary<string, double>();
+            _cumulativeOutWeight = new Dictionary<string, double>();
             r = new Random();
         }
 
@@ -300,12 +304,19 @@ namespace TemporalNetworks
         /// <returns></returns>
         public double GetCumulativeInWeight(string node)
         {
-            if (!_predecessors.ContainsKey(node))
-                return 0;
-            double sum = 0;
-            foreach (string x in _predecessors[node])
-                sum += this[new Tuple<string, string>(x, node)];
-            return sum;
+            if(!_cumulativeInWeight.ContainsKey(node))
+            {
+                if (!_predecessors.ContainsKey(node))
+                    return _cumulativeInWeight[node] = 0;
+                else
+                {
+                    double sum = 0;
+                    foreach (string x in _predecessors[node])
+                        sum += this[new Tuple<string, string>(x, node)];
+                    _cumulativeInWeight[node] = sum;
+                }
+            }
+            return _cumulativeInWeight[node];
         }
 
         /// <summary>
@@ -315,13 +326,19 @@ namespace TemporalNetworks
         /// <returns></returns>
         public double GetCumulativeOutWeight(string node)
         {
-            if (!_successors.ContainsKey(node))
-                return 0;
-
-            double sum = 0;
-            foreach (string x in _successors[node])
-                sum += this[new Tuple<string, string>(node, x)];
-            return sum;
+            if (!_cumulativeOutWeight.ContainsKey(node))
+            {
+                if (!_successors.ContainsKey(node))
+                    _cumulativeOutWeight[node] = 0d;
+                else 
+                {
+                    double sum = 0;
+                    foreach (string x in _successors[node])
+                        sum += this[new Tuple<string, string>(node, x)];
+                    _cumulativeOutWeight[node] = sum;
+                }
+            }
+            return _cumulativeOutWeight[node];
         }
 
         /// <summary>
