@@ -50,21 +50,31 @@ namespace TempNet
 
             Console.Write("Reading temporal network as undirected network...");
             TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], true);
-            Console.WriteLine("done.");
+            Console.WriteLine("done.");            
 
-            Console.WriteLine("Applying aggregation window, length = {0}, time steps before = {1}", aggregationWindow, temp_net.Length);
-            temp_net.AggregateTime(aggregationWindow);
-            Console.WriteLine("done, time steps after = {0}", temp_net.Length);            
+            if (aggregationWindow != 1)
+            {
+                Console.WriteLine("Applying aggregation window, length = {0}, time steps before = {1}", aggregationWindow, temp_net.Length);
+                temp_net.AggregateTime(aggregationWindow);
+                Console.WriteLine("done, time steps after = {0}", temp_net.Length);
+            }
+
+            Console.Write("Building aggregate network...");
+            WeightedNetwork aggregateNet = temp_net.AggregateNetwork;
+            Console.WriteLine("done.");
 
             IDictionary<int, int> output = null;
             if (type == "random")
-                output = RandomWalk.RunRandomWalk(temp_net.AggregateNetwork, use_weights: false);
+                output = RandomWalk.RunRW(aggregateNet, 20000, 0.95d, use_weights: false);
             else if (type == "weighted")
-                output = RandomWalk.RunRandomWalk(temp_net.AggregateNetwork, use_weights: true);
+                output = RandomWalk.RunRW(aggregateNet, 20000, 0.95d, use_weights: true);
             else if (type == "bwp_pres")
-                output = RandomWalk.RunRandomWalkBWP(temp_net);
+                output = RandomWalk.RunRW(temp_net, 20000, 0.95d);
             else if (type == "bwp_synth")
-                output = RandomWalk.RunRandomWalkSyntheticBWP(temp_net.AggregateNetwork, min_prob);
+            {
+                Console.WriteLine("Not implemented");
+             //   output = RandomWalk.RunRandomWalkSyntheticBWP(temp_net.AggregateNetwork, min_prob);
+            }
             else
             {
                 Console.WriteLine("\nError: RWType {0} unknown", type);
