@@ -17,14 +17,19 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [twopath_network=false]");
+                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [twopath_network=false]");
                 return;
             }
 
             string out_file = args[2];
             bool two_path = false;
-            if (args.Length == 4)
-                two_path = bool.Parse(args[3]);
+            int aggregationWindow = 1;
+
+            if (args.Length >= 4)
+                aggregationWindow = int.Parse(args[3]);
+
+            if (args.Length >= 5)
+                two_path = bool.Parse(args[4]);
 
             if (!CmdlTools.PromptExistingFile(out_file))
             {
@@ -32,18 +37,24 @@ namespace TempNet
                 return;
             }
 
-            Console.Write("Reading temporal network ...");
-            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1]);
+            Console.Write("Reading temporal network as undirected...");
+            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected: true);
             Console.WriteLine(" done.");
 
-            Console.Write("Aggregating temporal network ...");
+            Console.Write("Reducing to two path networks ...");
             temp_net.ReduceToTwoPaths();
             Console.WriteLine( "done.");
 
+            Console.WriteLine(temp_net.Length);
+            Console.Write("Applying agggregation window [{0}] ...", aggregationWindow);
+            temp_net.AggregateTime(aggregationWindow);
+            Console.WriteLine("done.");
+            Console.WriteLine(temp_net.Length);
+
             if (!two_path)
             {
-                Console.Write("Saving weighted aggregate network ...");
-                WeightedNetwork.SaveToFile(out_file, temp_net.AggregateNetwork);
+                Console.Write("Saving network ...");
+                TemporalNetwork.SaveToFile(out_file, temp_net);
                 Console.WriteLine(" done.");
             }
             else

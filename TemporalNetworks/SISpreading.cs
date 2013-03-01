@@ -23,22 +23,26 @@ namespace TemporalNetworks
         /// <returns>An enumerable of infection numbers, each entry giving the number of infected individuals at a certain time of the simulation</returns>
         public static string RunSpreading(TemporalNetwork temp_net, out string times, double p=1d)
         {
-            Dictionary<string, bool> infected = new Dictionary<string, bool>();
+
+            // Which nodes are already infected? 
+            Dictionary<string, bool> discovered = new Dictionary<string, bool>();
             Dictionary<int,int> infections = new Dictionary<int,int>(temp_net.Count);
 
+            // Initialize
             foreach (string s in temp_net.AggregateNetwork.Vertices)
-                infected[s] = false;
+                discovered[s] = false;
 
-
-
-            // Build the matrix of fastestPathLengths
+            // Build the initial matrix of fastestPathLengths
             Dictionary<string, int> indices = new Dictionary<string, int>(temp_net.AggregateNetwork.VertexCount);
             short[,] fastestPathLengths = new short[temp_net.AggregateNetwork.VertexCount, temp_net.AggregateNetwork.VertexCount];
             uint[,] fastestPathDurations= new uint[temp_net.AggregateNetwork.VertexCount, temp_net.AggregateNetwork.VertexCount];                        
+            
+            // Build the indices
             int i = 0;
             foreach (string s in temp_net.AggregateNetwork.Vertices)
                 indices[s] = i++;
 
+            // Initialize with maximum values ... 
             foreach (string s in temp_net.AggregateNetwork.Vertices)
                 foreach (string d in temp_net.AggregateNetwork.Vertices)
                 {
@@ -46,56 +50,70 @@ namespace TemporalNetworks
                     fastestPathDurations[indices[s], indices[d]] = uint.MaxValue;
                 }
 
-            // Infect the first active node in the sequence of edges
+            // Run a spreading process starting at each node in the network ... 
             foreach (var start in temp_net.AggregateNetwork.Vertices)
             {
+                // Reset the infected state for all 
                 foreach (string s in temp_net.AggregateNetwork.Vertices)
-                    infected[s] = false;
-                infected[start] = true;
-                //infections.Add(temp_net.First().Key, 1);
-                int infections_n = 1;
+                    discovered[s] = false;
+                
+                // Infect the start node 
+                int discovered_n = 1;
+                discovered[start] = true;                               
                 fastestPathLengths[indices[start], indices[start]] = 0;
-                fastestPathDurations[indices[start], indices[start]] = 0;
+                fastestPathDurations[indices[start], indices[start]] = 0;                
 
-                var start_time = temp_net.Keys.First(z => {
-                    foreach (var edge in temp_net[z])
-                        if (edge.Item1 == start || edge.Item2 == start)
-                            return true;
-                        return false;
-                });
-
-                var time_stamps = from x in temp_net.Keys where x >= start_time orderby x ascending select x;
-                uint t_ = (uint) start_time;
-
-                // Spreading in the temporal network
-                foreach (int t in time_stamps)
+                try
                 {
-                    foreach (var interaction in temp_net[t])
+                    // Get the first time stamp where the start node was source of two path
+                    var start_time = temp_net.TwoPathsByStartTime.Keys.First(z =>
                     {
-                        bool infectious = (p == 1d || rand.NextDouble() <= p);
+                        foreach (string twopath in temp_net.TwoPathsByStartTime[z])
+                            if (twopath.StartsWith(start))
+                                return true;
+                        return false;
+                    });
+                    uint t_ = (uint) start_time;
 
-                        // Both nodes can get infected
-                        if (infected[interaction.Item1] && !infected[interaction.Item2] && infectious)
+                    // Create a list of ordered time stamps starting with the first activity of the start node
+                    var time_stamps = from x in temp_net.TwoPathsByStartTime.Keys where x >= start_time orderby x ascending select x;
+                    
+                    // Extract all paths consisting of "two path" building blocks
+                    foreach (int t in time_stamps)
+                    {
+                        // A path continues if the source node of a two-path has already been discovered
+                        foreach (var two_path in temp_net.TwoPathsByStartTime[t])
                         {
-                            infections_n++;
-                            infected[interaction.Item2] = true;
-                            fastestPathLengths[indices[start], indices[interaction.Item2]] = (short)(fastestPathLengths[indices[start], indices[interaction.Item1]] + 1);
-                            fastestPathDurations[indices[start], indices[interaction.Item2]] = t_;
+                            // Get the three components of the two path
+                            string[] comps = two_path.Split(',');
+                            
+                            // If the target node of a two path has not been discovered before, we just discovered a new fastest time-respecting path!
+                            if (discovered[comps[0]] && !discovered[comps[2]])
+                            {
+                                // Add to nodes already discovered
+                                discovered_n++;
+                                discovered[comps[2]] = true;
+
+                                // Record geodesic distance of fastest time-respecting path
+                                fastestPathLengths[indices[start], indices[comps[2]]] = (short)(fastestPathLengths[indices[start], indices[comps[0]]] + 2);
+                                
+                                // Record temporal length of fastest time-respecting path
+                                fastestPathDurations[indices[start], indices[comps[2]]] = t_;
+                            }
                         }
-                        if (infected[interaction.Item2] && !infected[interaction.Item1] && infectious)
-                        {
-                            infections_n++;
-                            infected[interaction.Item1] = true;
-                            fastestPathLengths[indices[start], indices[interaction.Item1]] = (short)(fastestPathLengths[indices[start], indices[interaction.Item2]] + 1);
-                            fastestPathDurations[indices[start], indices[interaction.Item1]] = t_;
-                        }
+                        // Stop as soon as all nodes have been discovered
+                        if (discovered_n == temp_net.AggregateNetwork.VertexCount)
+                            break;
+
+                        // Advance the time by two
+                        t_ += 2;
                     }
-                    if (infections_n == temp_net.AggregateNetwork.VertexCount)
-                        break;               
-                    t_++;
                 }
+                catch(Exception) { 
+                    // In this case, a start node is never the source of two-path, so we just ignore it ... 
+                }                
             }
-            Console.WriteLine("Finished spreading. Writing path length matrix");
+           
             StringBuilder sb = new StringBuilder();
             StringBuilder sb_t = new StringBuilder();
 
@@ -103,7 +121,6 @@ namespace TemporalNetworks
 
             foreach (string s in nodes)
             {
-                Console.WriteLine(s);
                 foreach (string d in nodes)
                 {
                     sb.Append(fastestPathLengths[indices[s], indices[d]]+"\t");
@@ -112,7 +129,7 @@ namespace TemporalNetworks
                 sb.Append("\n");
                 sb_t.Append("\n");
             }
-            times = sb_t.ToString();
+            times = sb_t.ToString();            
             return sb.ToString();
         }
     }

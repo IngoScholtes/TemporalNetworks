@@ -42,11 +42,10 @@ namespace TempNet
             
             if (output != null)
             {
-                Console.WriteLine("Info: Infected {0} nodes after {1} steps", output.Last(), output.Count());
-                Console.Write("Writing spreading dynamics ...");                
+                Console.Write("Finished path discovery. Writing path length matrix");
                 System.IO.File.WriteAllText(out_file, output);
                 System.IO.File.WriteAllText(out_file+".times", times);
-                Console.WriteLine(" done.");
+                Console.WriteLine("done.");
             }
         }
     }

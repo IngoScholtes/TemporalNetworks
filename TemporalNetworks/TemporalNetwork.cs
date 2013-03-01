@@ -22,6 +22,7 @@ namespace TemporalNetworks
         /// </summary>
         Dictionary<string, Dictionary<int, List<Tuple<string, string>>>> _twoPathsByNode = null;
         Dictionary<string, double> _twoPathWeights = null;
+        Dictionary<int, List<string>> _twoPathsByStartTime = null;
 
         /// <summary>
         /// The two paths of all nodes in the temporal network
@@ -33,6 +34,19 @@ namespace TemporalNetworks
                 if (_twoPathsByNode == null || _cachedWeightedNetwork == null)
                     ReduceToTwoPaths();
                 return _twoPathsByNode;
+            }
+        }
+
+        /// <summary>
+        /// The two paths of all nodes in the temporal network
+        /// </summary>
+        public Dictionary<int, List<string>> TwoPathsByStartTime
+        {
+            get
+            {
+                if (_twoPathsByStartTime == null || _cachedWeightedNetwork == null)
+                    ReduceToTwoPaths();
+                return _twoPathsByStartTime;
             }
         }
         
@@ -131,6 +145,7 @@ namespace TemporalNetworks
         {
             _twoPathsByNode = new Dictionary<string, Dictionary<int,List<Tuple<string, string>>>>();
             _twoPathWeights = new Dictionary<string, double>();
+            _twoPathsByStartTime = new Dictionary<int, List<string>>();
             var two_path_edges = new Dictionary<int,List<Tuple<string,string>>>();
 
             int prev_t = -1;
@@ -200,7 +215,12 @@ namespace TemporalNetworks
                                 if (!_twoPathsByNode[v].ContainsKey(t))
                                     _twoPathsByNode[v][t] = new List<Tuple<string, string>>();
 
+                                if (!_twoPathsByStartTime.ContainsKey(prev_t))
+                                    _twoPathsByStartTime[prev_t] = new List<string>();
+
                                 _twoPathsByNode[v][t].Add(new Tuple<string,string>(s,d));
+                                _twoPathsByStartTime[prev_t].Add(s + "," + v + "," + d);
+                                
                             }
                         }
                     }                   

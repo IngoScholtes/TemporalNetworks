@@ -139,6 +139,7 @@ namespace TemporalNetworks
                 indices_pred[x] = ind_p;
                 indices_succ[x] = ind_s;
             }
+            // Build sampling vectors 
             foreach (string x in network.Vertices)
             {
                 double c;
@@ -148,13 +149,11 @@ namespace TemporalNetworks
             }
             Console.WriteLine("done.");
 
+            // Initialize first passage times 
             Dictionary<string, int> indices = new Dictionary<string, int>();
             int j = 0;
-
             foreach (string node in network.Vertices)
                 indices[node] = j++;
-
-
             int[,] firstPassageTimes = new int[network.VertexCount, network.VertexCount];
 
             foreach (string node1 in network.Vertices)
