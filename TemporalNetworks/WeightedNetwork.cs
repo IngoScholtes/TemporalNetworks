@@ -135,10 +135,10 @@ namespace TemporalNetworks
                 double sum = 0d;
                 foreach (string n in _successors[v])
                 {
-                    cumulative[sum + GetWeight(v, n)/GetCumulativeOutWeight(v)] = n;
-                    sum += GetWeight(v, n) / GetCumulativeOutWeight(v);
+                    cumulative[sum + GetWeight(v, n)] = n;
+                    sum += GetWeight(v, n);
                 }
-                double dice = r.NextDouble();
+                double dice = r.NextDouble() * sum;
                 for (int i = 0; i < _successors[v].Count; i++)
                 {
                     if(cumulative.Keys.ElementAt(i)>dice)

@@ -21,7 +21,7 @@ namespace TempNet
                 Console.WriteLine("\t random\t Performs a random walk on the aggregate network without considering weights");
                 Console.WriteLine("\t weighted\t Performs a random walk on the aggregate network that considers edge weights");
                 Console.WriteLine("\t bwp_pres\t Performs a random walk on the aggregate network that considers betweenness preferences computed from the temporal network");
-                Console.WriteLine("\t bwp_synth\t Performs a random walk on the aggregate network that considers synthetically generated betweenness preference.");
+                Console.WriteLine("\t bwp_null\t ...");
                 return;
             }
             string out_file = args[2];
@@ -63,18 +63,17 @@ namespace TempNet
             WeightedNetwork aggregateNet = temp_net.AggregateNetwork;
             Console.WriteLine("done.");
 
+            string matrix = null;
+
             IDictionary<int, int> output = null;
             if (type == "random")
                 output = RandomWalk.RunRW(aggregateNet, 20000, 0.95d, use_weights: false);
             else if (type == "weighted")
                 output = RandomWalk.RunRW(aggregateNet, 20000, 0.95d, use_weights: true);
             else if (type == "bwp_pres")
-                output = RandomWalk.RunRW(temp_net, 20000, 0.95d);
-            else if (type == "bwp_synth")
-            {
-                Console.WriteLine("Not implemented");
-             //   output = RandomWalk.RunRandomWalkSyntheticBWP(temp_net.AggregateNetwork, min_prob);
-            }
+                output = RandomWalk.RunRW(temp_net, out matrix, 20000, 0.95d, null_model: false);
+            else if (type == "bwp_null")
+                output = RandomWalk.RunRW(temp_net, out matrix, 20000, 0.95d, null_model: true);
             else
             {
                 Console.WriteLine("\nError: RWType {0} unknown", type);
@@ -89,6 +88,7 @@ namespace TempNet
             foreach (var step in output)
                 sb.AppendLine(string.Format("{0} {1}\n", step.Key, step.Value));
             System.IO.File.WriteAllText(out_file, sb.ToString());
+            System.IO.File.WriteAllText(out_file+".mat", matrix);
             Console.WriteLine(" done.");
         }
     }

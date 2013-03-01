@@ -36,16 +36,18 @@ namespace TempNet
             Console.WriteLine("done.");
 
             Console.Write("Running SI spreading on temporal network with {0} time steps ...", temp_net.Length);
-            IDictionary<int,int> output = SISpreading.RunSpreading(temp_net, 1d);
+            string times = null;
+            string output = SISpreading.RunSpreading(temp_net, out times, 1d);
             Console.WriteLine(" done.");
-
-            Console.WriteLine("Info: Infected {0} nodes after {1} steps", output.Last(), output.Count());
-            Console.Write("Writing spreading dynamics ...");
-            StringBuilder sb = new StringBuilder();
-            foreach (var step in output)
-                sb.AppendLine(string.Format("{0} {1}\n", step.Key, step.Value));
-            System.IO.File.WriteAllText(out_file, sb.ToString());
-            Console.WriteLine(" done.");
+            
+            if (output != null)
+            {
+                Console.WriteLine("Info: Infected {0} nodes after {1} steps", output.Last(), output.Count());
+                Console.Write("Writing spreading dynamics ...");                
+                System.IO.File.WriteAllText(out_file, output);
+                System.IO.File.WriteAllText(out_file+".times", times);
+                Console.WriteLine(" done.");
+            }
         }
     }
 }

@@ -10,13 +10,7 @@ namespace TemporalNetworks
         /// <summary>
         /// A random generator used for the spreading
         /// </summary>
-        private static Random rand = new Random();
-
-        private static Dictionary<string, Dictionary<string, int>> indices_pred = new Dictionary<string, Dictionary<string, int>>();
-        private static Dictionary<string, Dictionary<string, int>> indices_succ = new Dictionary<string, Dictionary<string, int>>();
-        private static Dictionary<string, double[,]> matrices = new Dictionary<string, double[,]>();
-
-        private static Dictionary<string, double> p_v = new Dictionary<string, double>();
+        private static Random rand = new Random();        
 
         /*
         /// <summary>
@@ -106,7 +100,7 @@ namespace TemporalNetworks
         /// <param name="max_steps"></param>
         /// <param name="cutoff"></param>
         /// <returns></returns>
-        public static IDictionary<int, int> RunRW(TemporalNetwork temp_net, int max_steps = 100000, double cutoff = 1d)
+        public static IDictionary<int, int> RunRW(TemporalNetwork temp_net, out string firstPassageMatrix, int max_steps = 100000, double cutoff = 1d, bool null_model = false)
         {
             Random r = new Random();
             Dictionary<string, bool> visited = new Dictionary<string, bool>();
@@ -114,8 +108,12 @@ namespace TemporalNetworks
             Dictionary<string, Dictionary<double, string>> cumulatives = new Dictionary<string, Dictionary<double, string>>();
             Dictionary<string, double> sums = new Dictionary<string, double>();
 
+            Dictionary<string, Dictionary<string, int>> indices_pred = new Dictionary<string, Dictionary<string, int>>();
+            Dictionary<string, Dictionary<string, int>> indices_succ = new Dictionary<string, Dictionary<string, int>>();
+            Dictionary<string, double[,]> matrices = new Dictionary<string, double[,]>();            
+
             // Aggregate network
-            WeightedNetwork network = temp_net.AggregateNetwork;
+            WeightedNetwork network = temp_net.AggregateNetwork;            
 
             // Compute betweenness preference matrices
             Console.Write("Computing betweenness preference in temporal network...");
@@ -123,34 +121,66 @@ namespace TemporalNetworks
             {
                 var ind_p = new Dictionary<string, int>();
                 var ind_s = new Dictionary<string, int>();
-                matrices[x] = BetweennessPref.GetBetweennessPrefMatrix(temp_net, x, out ind_p, out ind_s, false);
+                if (null_model)
+                {
+                    matrices[x] = BetweennessPref.GetUncorrelatedBetweennessPrefMatrix(temp_net, x, out ind_p, out ind_s);
+                    Dictionary<string,int> i_p, i_s = null;
+                    double[,] m = BetweennessPref.GetBetweennessPrefMatrix(temp_net, x, out i_p, out i_s, false);
+                    double count = 0d;
+                    foreach (string p in i_p.Keys)
+                        foreach (string s in i_s.Keys)
+                            count += m[i_p[p], i_s[s]];
+                    foreach (string p in ind_p.Keys)
+                        foreach (string s in ind_s.Keys)
+                            matrices[x][ind_p[p], ind_s[s]] = matrices[x][ind_p[p], ind_s[s]] * count;
+                }
+                else
+                    matrices[x] = BetweennessPref.GetBetweennessPrefMatrix(temp_net, x, out ind_p, out ind_s, false);
                 indices_pred[x] = ind_p;
-                indices_succ[x] = ind_s;                
+                indices_succ[x] = ind_s;
             }
             foreach (string x in network.Vertices)
             {
-                Dictionary<double, string> cumulative;
                 double c;
-                CreateCumulative(network, x, out cumulative, out c);
+                Dictionary<double, string> cumulative = CreateCumulative(network, x,  out c, matrices, indices_pred, indices_succ);
                 sums[x] = c;
                 cumulatives[x] = cumulative;
             }
             Console.WriteLine("done.");
-            
-            
-            // Initialize random walker
-            string v = network.RandomNode;
-            visited[v] = true;
-            int t = 0;
-            uniqueVisitations[t] = 1;
-            StringBuilder path = new StringBuilder(v);
-            
-            // Create a time-respecting path starting at v
-            while (uniqueVisitations[t] < cutoff * network.VertexCount && t < max_steps)
-            {                
-                double sample = rand.NextDouble() * sums[v];
-                string sampled_path = null;
-                for (int i = 0; i < cumulatives[v].Count; i++)
+
+            Dictionary<string, int> indices = new Dictionary<string, int>();
+            int j = 0;
+
+            foreach (string node in network.Vertices)
+                indices[node] = j++;
+
+
+            int[,] firstPassageTimes = new int[network.VertexCount, network.VertexCount];
+
+            foreach (string node1 in network.Vertices)
+                foreach (string node2 in network.Vertices)
+                    firstPassageTimes[indices[node1], indices[node2]] = -1;
+
+            foreach (var start in network.Vertices)
+            {
+                visited = new Dictionary<string, bool>();
+
+                
+
+                // Initialize random walker                
+                string v = start;
+                visited[v] = true;
+                firstPassageTimes[indices[v], indices[v]] = 0;
+
+                int t = 0;
+                uniqueVisitations[t] = 1;
+
+                // Create a time-respecting path starting at v
+                while (uniqueVisitations[t] < cutoff * network.VertexCount && t < max_steps)
+                {
+                    double sample = rand.NextDouble() * sums[v];
+                    string sampled_path = null;
+                    for (int i = 0; i < cumulatives[v].Count; i++)
                     {
                         if (cumulatives[v].Keys.ElementAt(i) > sample)
                         {
@@ -158,50 +188,78 @@ namespace TemporalNetworks
                             break;
                         }
                     }
+                    if (sampled_path == null)
+                        break;
 
-                // Now we have the path ... 
-                string[] comps = sampled_path.Split(',');
+                    // Now we have the path ... 
+                    string[] comps = sampled_path.Split(',');
 
-                // v is the first node of a two path, so we advance two steps ... 
-                if (comps.Length==3)
-                {
-                    t++;
-                    path.Append("," + comps[1]);
-                    if (!visited.ContainsKey(comps[1]))
-                        visited[v] = true;
-                    uniqueVisitations[t] = visited.Keys.Count;
+                    // v is the first node of a two path, so we advance two steps ... 
+                    if (comps.Length == 3)
+                    {
+                        t++;
+                        if (!visited.ContainsKey(comps[1]))
+                        {
+                            visited[comps[1]] = true;
+                            firstPassageTimes[indices[start], indices[comps[1]]] = t;
+                        }
+                        uniqueVisitations[t] = visited.Keys.Count;
 
-                    t++;
-                    path.Append("," + comps[2]);
-                    if (!visited.ContainsKey(comps[2]))
-                        visited[v] = true;
-                    uniqueVisitations[t] = visited.Keys.Count;
-                    v = comps[2];
+                        t++;
+
+                        if (!visited.ContainsKey(comps[2]))
+                        {
+                            visited[comps[2]] = true;
+                            firstPassageTimes[indices[start], indices[comps[2]]] = t;
+                        }
+                        uniqueVisitations[t] = visited.Keys.Count;
+                        v = comps[2];
+                    }
+                    // v is the second node of a two path, so we advance by one step ... 
+                    else if (comps.Length == 2)
+                    {
+                        t++;
+
+                        if (!visited.ContainsKey(comps[1]))
+                        {
+                            visited[comps[1]] = true;
+                            firstPassageTimes[indices[start], indices[comps[1]]] = t;
+                        }
+                        uniqueVisitations[t] = visited.Keys.Count;
+                        v = comps[1];
+                    }
+                    else
+                        throw new Exception("This will never happen! If you see this, I was wrong :-)");
+
                 }
-                // v is the second node of a two path, so we advance by one step ... 
-                else if (comps.Length==2)
-                {
-                    t++;
-                    path.Append("," + comps[1]);
-                    if (!visited.ContainsKey(comps[1]))
-                        visited[v] = true;
-                    uniqueVisitations[t] = visited.Keys.Count;
-                    v = comps[1];
-                }
-                else
-                    throw new Exception("This will never happen! If you see this, I was wrong :-)");
-
             }
+
+            StringBuilder sb = new StringBuilder();
+
+            var nodes = from n in temp_net.AggregateNetwork.Vertices.AsParallel() orderby n ascending select n;
+
+            foreach (string s in nodes)
+            {
+                Console.WriteLine(s);
+                foreach (string d in nodes)
+                {
+                    sb.Append(firstPassageTimes[indices[s], indices[d]] + "\t");
+                }
+                sb.Append("\n");
+            }
+            firstPassageMatrix = sb.ToString();
+
             return uniqueVisitations;
         }
 
-        private static void CreateCumulative(WeightedNetwork network, string v, out Dictionary<double, string> cumulative, out double c)
+        private static Dictionary<double, string> CreateCumulative(WeightedNetwork network, string v, out double c, Dictionary<string, double[,]> matrices, Dictionary<string,Dictionary<string, int>> indices_pred, Dictionary<string,Dictionary<string, int>> indices_succ)
         {
             // Pick a random two path from those where v is either the first or the second node ...
-            cumulative = new Dictionary<double, string>();
+            var cumulative = new Dictionary<double, string>();
             c = 0d;
 
-            // Two paths (s, _v_ ,d)            
+            // Collect all two-paths (s, _v_ ,d)            
+            /*
             foreach (string d in network.GetSuccessors(v))
             {
                 double val = 0d;
@@ -213,6 +271,7 @@ namespace TemporalNetworks
                     cumulative[c] = v + "," + d;
                 }
             }
+             * */
 
             // Two paths (_v_, x, y)
             foreach (string x in network.GetSuccessors(v))
@@ -227,6 +286,7 @@ namespace TemporalNetworks
                     }
                 }
             }
+            return cumulative;
         }
 
 

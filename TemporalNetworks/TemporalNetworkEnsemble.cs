@@ -131,10 +131,12 @@ namespace TemporalNetworks
             List<Tuple<string, string>> in_edges = new List<Tuple<string, string>>();
             List<Tuple<string, string>> out_edges = new List<Tuple<string, string>>();
 
+            string[] split = null;
+
             foreach (var twopath in net.TwoPathWeights.Keys)
                 for (int k = 0; k < Math.Round(net.TwoPathWeights[twopath] * lcm); k++)
                 {
-                    string[] split = twopath.Split(',');
+                    split = twopath.Split(',');
                     in_edges.Add(new Tuple<string,string>(split[0],split[1]));
                     out_edges.Add(new Tuple<string, string>(split[1], split[2]));
                 }
