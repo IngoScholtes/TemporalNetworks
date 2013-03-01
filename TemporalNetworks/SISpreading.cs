@@ -35,6 +35,7 @@ namespace TemporalNetworks
             // Build the initial matrix of fastestPathLengths
             Dictionary<string, int> indices = new Dictionary<string, int>(temp_net.AggregateNetwork.VertexCount);
             short[,] fastestPathLengths = new short[temp_net.AggregateNetwork.VertexCount, temp_net.AggregateNetwork.VertexCount];
+            short[,] fastestPath_mid_Lengths = new short[temp_net.AggregateNetwork.VertexCount, temp_net.AggregateNetwork.VertexCount];
             uint[,] fastestPathDurations= new uint[temp_net.AggregateNetwork.VertexCount, temp_net.AggregateNetwork.VertexCount];                        
             
             // Build the indices
@@ -47,6 +48,7 @@ namespace TemporalNetworks
                 foreach (string d in temp_net.AggregateNetwork.Vertices)
                 {
                     fastestPathLengths[indices[s], indices[d]] = short.MaxValue;
+                    fastestPath_mid_Lengths[indices[s], indices[d]] = short.MaxValue;
                     fastestPathDurations[indices[s], indices[d]] = uint.MaxValue;
                 }
 
@@ -86,6 +88,9 @@ namespace TemporalNetworks
                         {
                             // Get the three components of the two path
                             string[] comps = two_path.Split(',');
+
+                            // Record the geodesic distance between the start and the middle node comps[1]
+                            fastestPath_mid_Lengths[indices[start], indices[comps[1]]] = (short) Math.Min(fastestPath_mid_Lengths[indices[start], indices[comps[1]]], fastestPathLengths[indices[start], indices[comps[0]]]+1);
                             
                             // If the target node of a two path has not been discovered before, we just discovered a new fastest time-respecting path!
                             if (discovered[comps[0]] && !discovered[comps[2]])
@@ -113,6 +118,11 @@ namespace TemporalNetworks
                     // In this case, a start node is never the source of two-path, so we just ignore it ... 
                 }                
             }
+
+            // Aggregate the matrices 
+            foreach(string s in temp_net.AggregateNetwork.Vertices)
+                foreach (string d in temp_net.AggregateNetwork.Vertices)
+                    fastestPathLengths[indices[s], indices[d]] = Math.Min(fastestPathLengths[indices[s], indices[d]], fastestPath_mid_Lengths[indices[s], indices[d]]);
            
             StringBuilder sb = new StringBuilder();
             StringBuilder sb_t = new StringBuilder();
