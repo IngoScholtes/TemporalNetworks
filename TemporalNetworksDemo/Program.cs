@@ -90,7 +90,6 @@ namespace TemporalNetworksDemo
             Console.WriteLine("Betw. pref. of e with shuffled two paths = \t\t{0:0.00000}", 
                     BetweennessPref.GetBetweennessPref(microstate_betweennessPref, "e"));
 
-
             // Compute the betweenness preference matrices of the networks
             Dictionary<string, int> ind_pred;
             Dictionary<string, int> ind_succ;
@@ -99,12 +98,8 @@ namespace TemporalNetworksDemo
             double[,] m2 = BetweennessPref.GetBetweennessPrefMatrix(microstate_betweennessPref, "e", out ind_pred, out ind_succ, normalized: false);
 
             // Get the betweenness preference distribution
-            IEnumerable<double> dist = BetweennessPref.GetBetweennessPrefDist(temporal_net);
+            IEnumerable<double> dist = BetweennessPref.GetBetweennessPrefDist(temporal_net);                       
 
-            // Run an SI spreading on both temporal networks
-            IDictionary<int, int> infections_random = SISpreading.RunSpreading(microstate_random, 1d);
-
-            IDictionary<int,int> infections_betwPref = SISpreading.RunSpreading(microstate_betweennessPref, 1d);
         }
     }
 }

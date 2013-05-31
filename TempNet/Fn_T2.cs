@@ -8,7 +8,7 @@ using TemporalNetworks;
 
 namespace TempNet
 {
-    class Fn_Distribution
+    class Fn_T2
     {
         /// <summary>
         /// Parallely computes the betweenness preference distribution of a given temporal network
@@ -18,7 +18,7 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet distribution [temporal_network_file] [output_file] [aggregationWndow=1] [undirected=false]");
+                Console.WriteLine("Usage: TempNet T2 [temporal_network_file] [output_file] [aggregationWndow=1] [undirected=false]");
                 return;
             }
             string out_file = args[2];
@@ -49,37 +49,8 @@ namespace TempNet
             temp_net.ReduceToTwoPaths();
             Console.WriteLine(" done.");
 
-            double nodeNum = temp_net.AggregateNetwork.VertexCount;
-            double current = 0d;
-            double last_perc = 0d;
-
-            Console.WriteLine("Computing betweenness preference for {0} nodes ...", nodeNum);
-
-            // Parallely compute betweenness preference for all nodes
-#if DEBUG 
-            foreach(string v in temp_net.AggregateNetwork.Vertices)
-#else
-            Parallel.ForEach<string>(temp_net.AggregateNetwork.Vertices, v =>
-#endif
-            {
-                double betweennessPref = BetweennessPref.GetBetweennessPref(temp_net, v);
-
-                // Synchronized access to file and to counters ... 
-                if(temp_net.AggregateNetwork.GetIndeg(v)>0 && temp_net.AggregateNetwork.GetOutdeg(v)>0)
-                    lock (out_file)
-                    {
-                        System.IO.File.AppendAllText(out_file, v + " " + string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}\n", betweennessPref));
-                        current++;
-                        if (100 * current / nodeNum >= last_perc + 5d)
-                        {
-                            last_perc = 100 * current / nodeNum;
-                            Console.WriteLine("Completed for {0} nodes [{1:0.0} %]", current, last_perc);
-                        }
-                    }
-            }
-#if !DEBUG
-                );
-#endif
+            Console.Write("Writing transition matrix ...");
+            temp_net.WriteTwopathTransitionMatrix(out_file);            
             Console.WriteLine("done.");
         }
     }

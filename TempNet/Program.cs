@@ -23,7 +23,8 @@ namespace TempNet
                 Console.WriteLine("\t\t example \t Create a simple example for a temporal network");
                 Console.WriteLine("\t\t match \t\t Check whether the aggregated version of two temporal networks are identical");
                 Console.WriteLine("\t\t aggregate \t Create a weighted aggregate network from a temporal network");
-                Console.WriteLine("\t\t shuffle \t Shuffle edges or two paths of a temporal network"); 
+                Console.WriteLine("\t\t shuffle \t Shuffle edges or two paths of a temporal network");
+                Console.WriteLine("\t\t T2 \t\t Writes a matrix of two-path transition probabilities to a file"); 
                 Console.WriteLine("");
                 Console.WriteLine("Specify any of the functions without further parameter to get help on available [options].");
                 return; 
@@ -49,6 +50,8 @@ namespace TempNet
                 Fn_Stats.Run(args);
             else if (function == "shuffle")
                 Fn_Shuffle.Run(args);
+            else if (function == "T2")
+                Fn_T2.Run(args);
             else
                 Console.WriteLine("Unknown function {0}", function);
         }

@@ -95,5 +95,60 @@ namespace TemporalNetworksTest
 
             return temporal_net;
         }
+
+        /// <summary>
+        /// Returns a test network suitable for testing the AggregateWindow method
+        /// </summary>
+        /// <returns></returns>
+        public static TemporalNetwork GetTestNetwork4()
+        {
+            TemporalNetwork temporal_net = new TemporalNetwork();
+
+            // Create sequence based on edges in edge graph
+
+            // two-paths ending in (a,b)
+            temporal_net.AddTemporalEdge(1, "b", "a");
+            temporal_net.AddTemporalEdge(2, "a", "b");
+
+            temporal_net.AddTemporalEdge(3, "c", "a");
+            temporal_net.AddTemporalEdge(4, "a", "b");
+
+            // two-paths ending in (b,a)
+            temporal_net.AddTemporalEdge(5, "a", "b");
+            temporal_net.AddTemporalEdge(6, "b", "a");
+
+            temporal_net.AddTemporalEdge(7, "c", "b");
+            temporal_net.AddTemporalEdge(8, "b", "c");
+
+            // two-paths ending in (b,c)
+            temporal_net.AddTemporalEdge(9, "a", "b");
+            temporal_net.AddTemporalEdge(10, "b", "c");
+
+            // two-paths ending in (c,b)
+            temporal_net.AddTemporalEdge(11, "b", "c");
+            temporal_net.AddTemporalEdge(12, "c", "b");
+
+            temporal_net.AddTemporalEdge(13, "a", "c");
+            temporal_net.AddTemporalEdge(14, "c", "a");  
+
+            temporal_net.AddTemporalEdge(15, "c", "b");
+            temporal_net.AddTemporalEdge(16, "b", "a");
+
+            // two-paths ending in (a,c)
+            temporal_net.AddTemporalEdge(17, "b", "a");
+            temporal_net.AddTemporalEdge(18, "a", "c");
+
+            temporal_net.AddTemporalEdge(19, "a", "c");
+            temporal_net.AddTemporalEdge(20, "c", "b");
+
+            temporal_net.AddTemporalEdge(21, "c", "a");
+            temporal_net.AddTemporalEdge(22, "a", "c");
+
+            // two-paths ending in (c,a)
+            temporal_net.AddTemporalEdge(23, "b", "c");
+            temporal_net.AddTemporalEdge(24, "c", "a");                      
+
+            return temporal_net;
+        }
     }
 }

@@ -103,7 +103,7 @@ namespace TemporalNetworks
                                 fastestPathLengths[indices[start], indices[comps[2]]] = (short)(fastestPathLengths[indices[start], indices[comps[0]]] + 2);
                                 
                                 // Record temporal length of fastest time-respecting path
-                                fastestPathDurations[indices[start], indices[comps[2]]] = t_;
+                                fastestPathDurations[indices[start], indices[comps[2]]] = (uint) (t-start_time);
                             }
                         }
                         // Stop as soon as all nodes have been discovered
@@ -116,7 +116,7 @@ namespace TemporalNetworks
                 }
                 catch(Exception) { 
                     // In this case, a start node is never the source of two-path, so we just ignore it ... 
-                }                
+                }
             }
 
             // Aggregate the matrices 

@@ -487,6 +487,77 @@ namespace TemporalNetworks
             return true;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public void WriteTwopathTransitionMatrix(string file)
+        {
+            // Dictionary that takes transition probabilities for pairs of edges (i.e. two-paths)
+            var P = new Dictionary<Tuple<Tuple<string,string>, Tuple<string,string>>, double>();
+
+            var source_edges = new List<Tuple<string,string>>();
+            var target_edges = new List<Tuple<string,string>>();
+
+            foreach (var x in _twoPathWeights.Keys)
+            {
+                string[] nodes = x.Split(',');
+                var source = new Tuple<string, string>(nodes[0], nodes[1]);
+                var target = new Tuple<string, string>(nodes[1], nodes[2]);
+
+                if(!source_edges.Contains(source))
+                    source_edges.Add(source);
+                if(!target_edges.Contains(target))
+                    target_edges.Add(target);
+
+                var two_path = new Tuple<Tuple<string, string>,Tuple<string, string>>(source, target);
+                P[two_path] = _twoPathWeights[x];
+            }
+
+            // make matrix row-stochastic           
+
+            foreach (var source in source_edges)
+            {
+                double sum = 0d;
+                foreach (var target in target_edges)
+                {
+                    var two_path = new Tuple<Tuple<string,string>,Tuple<string,string>>(source,target);
+                    if(P.ContainsKey(two_path))
+                        sum += P[two_path];
+                }
+                foreach (var target in target_edges)
+                {
+                    var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
+                    if (P.ContainsKey(two_path))
+                        P[two_path] /= sum;
+                }
+            }
+
+            System.IO.StreamWriter sw = new System.IO.StreamWriter(file);
+
+            // Column header
+            foreach(var target in target_edges)
+                sw.Write(target.Item1+";"+target.Item2+" ");
+
+            sw.WriteLine();
+
+            foreach(var source in source_edges)
+            {
+                sw.Write(source.Item1+";"+source.Item2+" ");
+                foreach(var target in target_edges)
+                {
+                    var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
+                    if(P.ContainsKey(two_path))
+                        sw.Write("{0} ", string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target)]));
+                    else 
+                        sw.Write("0 ");
+                }
+                sw.WriteLine();
+            }
+            sw.Close();
+        }
+
         /// <summary>
         /// Just pass on the hash code from the base class
         /// </summary>
