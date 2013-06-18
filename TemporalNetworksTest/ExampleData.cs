@@ -150,5 +150,108 @@ namespace TemporalNetworksTest
 
             return temporal_net;
         }
+
+        /// <summary>
+        /// Returns a test network in which node B should have betweenness preference 0
+        /// </summary>
+        /// <returns></returns>
+        public static TemporalNetwork GetTestNetwork5()
+        {
+            TemporalNetwork temporal_net = new TemporalNetwork();
+
+            // Create sequence based on edges in edge graph
+
+            // two-paths ending in (a,b)
+            temporal_net.AddTemporalEdge(1, "A", "B");
+            temporal_net.AddTemporalEdge(2, "B", "D");
+
+            temporal_net.AddTemporalEdge(3, "A", "B");
+            temporal_net.AddTemporalEdge(4, "B", "C");
+
+            // two-paths ending in (b,a)
+            temporal_net.AddTemporalEdge(5, "D", "B");
+            temporal_net.AddTemporalEdge(6, "B", "D");
+
+            temporal_net.AddTemporalEdge(7, "C", "B");
+            temporal_net.AddTemporalEdge(8, "B", "A");
+
+            // two-paths ending in (b,c)
+            temporal_net.AddTemporalEdge(9, "D", "B");
+            temporal_net.AddTemporalEdge(10, "B", "C");
+
+            temporal_net.AddTemporalEdge(11, "X", "Y");
+
+            // two-paths ending in (c,b)
+            temporal_net.AddTemporalEdge(12, "C", "B");
+            temporal_net.AddTemporalEdge(13, "B", "D");
+
+            temporal_net.AddTemporalEdge(14, "C", "B");
+            temporal_net.AddTemporalEdge(15, "B", "C");
+
+            temporal_net.AddTemporalEdge(16, "D", "B");
+            temporal_net.AddTemporalEdge(17, "B", "A");
+
+            temporal_net.AddTemporalEdge(18, "X", "Y");
+
+            temporal_net.AddTemporalEdge(19, "A", "B");
+            temporal_net.AddTemporalEdge(20, "B", "A");
+
+            return temporal_net;
+        }
+
+        /// <summary>
+        /// Returns a test network in which node B should have betweenness preference 0
+        /// </summary>
+        /// <returns></returns>
+        public static TemporalNetwork GetTestNetwork6()
+        {
+            TemporalNetwork temporal_net = new TemporalNetwork();
+
+            // Create sequence based on edges in edge graph
+
+            // two-paths ending in (a,b)
+            temporal_net.AddTemporalEdge(1, "A", "B");
+            temporal_net.AddTemporalEdge(2, "B", "C");
+
+            temporal_net.AddTemporalEdge(3, "A", "B");
+            temporal_net.AddTemporalEdge(4, "B", "C");
+
+            // two-paths ending in (b,a)
+            temporal_net.AddTemporalEdge(5, "D", "B");
+            temporal_net.AddTemporalEdge(6, "B", "A");
+
+            temporal_net.AddTemporalEdge(7, "C", "B");
+            temporal_net.AddTemporalEdge(8, "B", "D");
+
+            temporal_net.AddTemporalEdge(9, "X", "Y");
+
+            // two-paths ending in (b,c)
+            temporal_net.AddTemporalEdge(10, "D", "B");
+            temporal_net.AddTemporalEdge(11, "B", "A");            
+
+            // two-paths ending in (c,b)
+            temporal_net.AddTemporalEdge(12, "C", "B");
+            temporal_net.AddTemporalEdge(13, "B", "D");
+
+            temporal_net.AddTemporalEdge(14, "C", "B");
+            temporal_net.AddTemporalEdge(15, "B", "D");
+
+            temporal_net.AddTemporalEdge(16, "X", "Y");
+
+            temporal_net.AddTemporalEdge(17, "D", "B");
+            temporal_net.AddTemporalEdge(18, "B", "A");
+
+            temporal_net.AddTemporalEdge(19, "X", "Y");
+
+            temporal_net.AddTemporalEdge(20, "A", "B");
+            temporal_net.AddTemporalEdge(21, "B", "C");
+
+            
+
+            temporal_net.AddTemporalEdge(19, "A", "B");
+            temporal_net.AddTemporalEdge(20, "B", "A");
+
+            return temporal_net;
+        }
     }
 }

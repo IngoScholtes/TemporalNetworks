@@ -143,6 +143,36 @@ namespace TemporalNetworksTest
             Assert.AreEqual(actual[index_pred["c"], index_succ["g"]], (6d / 11d) * (3d / 10d));
             Assert.AreEqual(actual[index_pred["f"], index_succ["g"]], (1d / 11d) * (3d / 10d));
             Assert.AreEqual(actual[index_pred["g"], index_succ["g"]], (1d / 11d) * (3d / 10d));
-        }  
+        }
+
+
+        [TestMethod()]
+        public void NoBWPTest()
+        {
+            TemporalNetwork net = ExampleData.GetTestNetwork5();
+
+            Dictionary<string, int> index_pred = null;
+            Dictionary<string, int> index_succ = null;
+
+            double[,] actual = null;
+            actual = BetweennessPref.GetBetweennessPrefMatrix(net, "B", out index_pred, out index_succ);
+
+            double bwp = BetweennessPref.GetBetweennessPref(net, "B");
+            Assert.AreEqual(bwp, 0d);
+        }
+
+        [TestMethod()]
+        public void BWPTest()
+        {
+            TemporalNetwork net = ExampleData.GetTestNetwork6();
+
+            Dictionary<string, int> index_pred = null;
+            Dictionary<string, int> index_succ = null;
+
+            double[,] actual = null;
+            actual = BetweennessPref.GetBetweennessPrefMatrix(net, "B", out index_pred, out index_succ);
+
+            double bwp = BetweennessPref.GetBetweennessPref(net, "B");
+        }
     }
 }

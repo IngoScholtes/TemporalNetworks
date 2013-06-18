@@ -497,8 +497,7 @@ namespace TemporalNetworks
             // Dictionary that takes transition probabilities for pairs of edges (i.e. two-paths)
             var P = new Dictionary<Tuple<Tuple<string,string>, Tuple<string,string>>, double>();
 
-            var source_edges = new List<Tuple<string,string>>();
-            var target_edges = new List<Tuple<string,string>>();
+            var edge_nodes = new List<Tuple<string,string>>();
 
             foreach (var x in _twoPathWeights.Keys)
             {
@@ -506,46 +505,49 @@ namespace TemporalNetworks
                 var source = new Tuple<string, string>(nodes[0], nodes[1]);
                 var target = new Tuple<string, string>(nodes[1], nodes[2]);
 
-                if(!source_edges.Contains(source))
-                    source_edges.Add(source);
-                if(!target_edges.Contains(target))
-                    target_edges.Add(target);
+                if (!edge_nodes.Contains(source))
+                    edge_nodes.Add(source);
+                if(!edge_nodes.Contains(target))
+                    edge_nodes.Add(target);
 
                 var two_path = new Tuple<Tuple<string, string>,Tuple<string, string>>(source, target);
                 P[two_path] = _twoPathWeights[x];
             }
 
             // make matrix row-stochastic           
-
-            foreach (var source in source_edges)
+            foreach (var source in edge_nodes)
             {
                 double sum = 0d;
-                foreach (var target in target_edges)
+                foreach (var target in edge_nodes)
                 {
                     var two_path = new Tuple<Tuple<string,string>,Tuple<string,string>>(source,target);
-                    if(P.ContainsKey(two_path))
+                    if (P.ContainsKey(two_path))
                         sum += P[two_path];
+                    else
+                        P[two_path] = 0;
                 }
-                foreach (var target in target_edges)
+                foreach (var target in edge_nodes)
                 {
                     var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
-                    if (P.ContainsKey(two_path))
+                    if (P.ContainsKey(two_path) && sum > 0)
+                    {
                         P[two_path] /= sum;
+                    }
                 }
             }
 
             System.IO.StreamWriter sw = new System.IO.StreamWriter(file);
 
             // Column header
-            foreach(var target in target_edges)
+            foreach(var target in from x in edge_nodes orderby x select x)
                 sw.Write(target.Item1+";"+target.Item2+" ");
 
             sw.WriteLine();
 
-            foreach(var source in source_edges)
+            foreach (var source in from x in edge_nodes orderby x select x)
             {
                 sw.Write(source.Item1+";"+source.Item2+" ");
-                foreach(var target in target_edges)
+                foreach(var target in from x in edge_nodes orderby x select x)
                 {
                     var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
                     if(P.ContainsKey(two_path))
@@ -558,6 +560,17 @@ namespace TemporalNetworks
             sw.Close();
         }
 
+        public void Remove(string node)
+        {
+            foreach (int t in this.Keys)
+            {                
+                this[t].RemoveAll(x => {
+                    bool remove = (x.Item1 == node || x.Item2 == node);
+                    return remove;
+                });
+            }
+        }
+
         /// <summary>
         /// Just pass on the hash code from the base class
         /// </summary>
@@ -565,6 +578,18 @@ namespace TemporalNetworks
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        public void Remove(Tuple<string, string> tuple)
+        {
+            foreach (int t in this.Keys)
+            {
+                this[t].RemoveAll(x =>
+                {
+                    bool remove = (x.Item1 == tuple.Item1 && x.Item2 == tuple.Item2) || (x.Item1 == tuple.Item2 && x.Item2 == tuple.Item1);
+                    return remove;
+                });
+            }
         }
     }
 }

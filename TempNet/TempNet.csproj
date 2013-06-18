@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CmdlTools.cs" />
+    <Compile Include="Fn_Filter.cs" />
     <Compile Include="Fn_T2.cs" />
     <Compile Include="Fn_Aggregate.cs" />
     <Compile Include="Fn_Distribution.cs" />

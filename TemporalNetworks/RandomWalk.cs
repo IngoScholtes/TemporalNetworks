@@ -10,311 +10,168 @@ namespace TemporalNetworks
         /// <summary>
         /// A random generator used for the spreading
         /// </summary>
-        private static Random rand = new Random();        
-
-        /*
-        /// <summary>
-        /// Performs a random walk on a weighted static network. Depending on the parameter use_weights, the random walk transition probabilities 
-        /// will be biased by the edge weights. 
-        /// </summary>
-        /// <param name="network">The static, weighted network to use</param>
-        /// <param name="use_weights">Whether or not to consider the weights in the random walk transition probabilities</param>
-        /// <returns>The number of visited nodes in each time step</returns>
-        public static IDictionary<int, int> RunRandomWalk(WeightedNetwork network, bool use_weights = false)
-        {            
-            return Walk_Random(network, use_weights: use_weights, max_steps: 50000, cutoff: 0.95d);
-        }
-
-        public static IDictionary<int, int> RunRandomWalkSyntheticBWP(WeightedNetwork network, double min_prob)
-        {           
-            // Generate betweenness preference matrices
-            Console.Write("Generating synthetic betweenness preference...");
-            foreach (string v in network.Vertices)
-            {
-                if (network.GetOutdeg(v) != network.GetIndeg(v))
-                    throw new Exception("\nAt the moment, synthetic BWP can only be generated for undirected networks!");
-
-                indices_pred[v] = new Dictionary<string, int>();
-                indices_succ[v] = new Dictionary<string, int>();
-                int i = 0;
-                foreach (string s in network.GetPredecessors(v))
-                    indices_pred[v][s] = i++;
-                i = 0;
-                foreach (string d in network.GetSuccessors(v))
-                    indices_succ[v][d] = i++;
-
-                // All entries will be zero by default
-                matrices[v] = new double[network.GetIndeg(v), network.GetOutdeg(v)];
-                for (int l = 0; l < network.GetIndeg(v); l++)
-                    for (int m = 0; m < network.GetOutdeg(v); m++)
-                        matrices[v][l, m] = min_prob;
-
-                // 
-                for (int l = 0; l < network.GetIndeg(v); l++)
-                    matrices[v][l, l] = 0d;
-
-                // Walk through the diagonal elements 
-                for (int k = 0; k<network.GetOutdeg(v); k++)
-                {
-                    // Is there a high prob. entry in the row? 
-                    bool row_set = false;
-                    for (int l = 0; l < network.GetOutdeg(v); l++)
-                        if (matrices[v][k, l] > min_prob)
-                            row_set = true;
-
-                    bool col_set = false;
-                    for (int l = 0; l < network.GetOutdeg(v); l++)
-                        if (matrices[v][l, k] > min_prob)
-                            col_set = true;
-
-                    // Assign values ... 
-                    if (!row_set)
-                    {
-                        int l = rand.Next(0, network.GetOutdeg(v));
-                        if (l == k)
-                            l = (l + rand.Next(1, network.GetOutdeg(v) - 1)) % network.GetOutdeg(v);
-                        matrices[v][k, l] = 1d;
-                    }
-
-                    if (!col_set)
-                    {
-                        int l = rand.Next(0, network.GetOutdeg(v));
-                        if (l == k)
-                            l = (l + rand.Next(1, network.GetOutdeg(v) - 1)) % network.GetOutdeg(v);
-                        matrices[v][l,k] = 1d;
-                    }
-                }                
-            }
-            Console.WriteLine("done.");
-            return Walk_BWP(network, max_steps: 50000, cutoff: 0.95d);
-        }
-         * 
-         * */
+        private static Random rand = new Random();
 
 
-        /// <summary>
-        /// Extracts a time-respecting path covering the whole network from a random realization 
-        /// of a temporal network with betweenness preference according to a given temporal network
-        /// </summary>
-        /// <param name="temp_net"></param>
-        /// <param name="max_steps"></param>
-        /// <param name="cutoff"></param>
-        /// <returns></returns>
-        public static IDictionary<int, int> RunRW(TemporalNetwork temp_net, out string firstPassageMatrix, int max_steps = 100000, double cutoff = 1d, bool null_model = false)
+        public static IDictionary<int, double> RunRW_BWP(TemporalNetwork temp_net, int max_steps = 100000, bool null_model = false)
         {
             Random r = new Random();
-            Dictionary<string, bool> visited = new Dictionary<string, bool>();
-            Dictionary<int, int> uniqueVisitations = new Dictionary<int, int>();
-            Dictionary<string, Dictionary<double, string>> cumulatives = new Dictionary<string, Dictionary<double, string>>();
-            Dictionary<string, double> sums = new Dictionary<string, double>();
+
+            var cumulatives = new Dictionary<Tuple<string,string>, Dictionary<double, string>>();
+            var sums = new Dictionary<Tuple<string, string>, double>();
+
+            // Dictionary<string, Dictionary<double, string>> cumulatives = 
+            // Dictionary<string, double> sums = new Dictionary<string, double>();
 
             Dictionary<string, Dictionary<string, int>> indices_pred = new Dictionary<string, Dictionary<string, int>>();
             Dictionary<string, Dictionary<string, int>> indices_succ = new Dictionary<string, Dictionary<string, int>>();
-            Dictionary<string, double[,]> matrices = new Dictionary<string, double[,]>();            
+            Dictionary<string, double[,]> matrices = new Dictionary<string, double[,]>();
+
+            Dictionary<string, int> visitations = new Dictionary<string, int>();
+            Dictionary<string, double> stationary = new Dictionary<string, double>();
+
+            Dictionary<Tuple<string, string>, int> edge_visitations = new Dictionary<Tuple<string, string>, int>();
+            Dictionary<Tuple<string, string>, double> edge_stationary = new Dictionary<Tuple<string, string>, double>();
+            
+            Dictionary<int, double> tvd = new Dictionary<int, double>();
 
             // Aggregate network
-            WeightedNetwork network = temp_net.AggregateNetwork;            
+            WeightedNetwork network = temp_net.AggregateNetwork;
+
+            // Read analytical stationary distribution (i.e. correct edge weights) from disk
+            string[] lines = System.IO.File.ReadAllLines("stationary_dist_RM.dat");
+            foreach (string x in lines)
+            {
+                string[] split = x.Split(' ');
+                string[] nodes = split[0].Split('.');
+                var edge = new Tuple<string,string>(nodes[0], nodes[1]);
+
+                // Extract stationary dist, set visitations to zero and adjust edge weights ... 
+                edge_stationary[edge] = double.Parse(split[1], System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat);
+                edge_visitations[edge] = 0;
+                network[edge] = edge_stationary[edge];
+            }
+            double total = 0d;
+
+            // Compute stationary dist of vertices ... 
+            foreach(string x in network.Vertices)
+            {
+                stationary[x] = 0d;
+                foreach(string s in network.GetPredecessors(x))
+                    stationary[x] += edge_stationary[new Tuple<string,string>(s,x)];
+                total += stationary[x];
+            }
+            foreach (string x in network.Vertices)
+                stationary[x] = stationary[x] / total;                      
 
             // Compute betweenness preference matrices
-            Console.Write("Computing betweenness preference in temporal network...");
+            if(null_model == false)
+                Console.Write("Computing betweenness preference in temporal network ...");
+            else
+                Console.Write("Calculating null model betweenness preference ...");
             foreach (string x in network.Vertices)
             {
                 var ind_p = new Dictionary<string, int>();
                 var ind_s = new Dictionary<string, int>();
-                if (null_model)
-                {
-                    matrices[x] = BetweennessPref.GetUncorrelatedBetweennessPrefMatrix(temp_net, x, out ind_p, out ind_s);
-                    Dictionary<string,int> i_p, i_s = null;
-                    double[,] m = BetweennessPref.GetBetweennessPrefMatrix(temp_net, x, out i_p, out i_s, false);
-                    double count = 0d;
-                    foreach (string p in i_p.Keys)
-                        foreach (string s in i_s.Keys)
-                            count += m[i_p[p], i_s[s]];
-                    foreach (string p in ind_p.Keys)
-                        foreach (string s in ind_s.Keys)
-                            matrices[x][ind_p[p], ind_s[s]] = matrices[x][ind_p[p], ind_s[s]] * count;
-                }
-                else
+                if(!null_model)                                 
                     matrices[x] = BetweennessPref.GetBetweennessPrefMatrix(temp_net, x, out ind_p, out ind_s, false);
+                else                
+                    matrices[x] = BetweennessPref.GetUncorrelatedBetweennessPrefMatrix(temp_net, x, out ind_p, out ind_s);
+
                 indices_pred[x] = ind_p;
                 indices_succ[x] = ind_s;
             }
-            // Build sampling vectors 
-            foreach (string x in network.Vertices)
-            {
-                double c;
-                Dictionary<double, string> cumulative = CreateCumulative(network, x,  out c, matrices, indices_pred, indices_succ);
-                sums[x] = c;
-                cumulatives[x] = cumulative;
-            }
             Console.WriteLine("done.");
 
-            // Initialize first passage times 
-            Dictionary<string, int> indices = new Dictionary<string, int>();
-            int j = 0;
-            foreach (string node in network.Vertices)
-                indices[node] = j++;
-            int[,] firstPassageTimes = new int[network.VertexCount, network.VertexCount];
-
-            foreach (string node1 in network.Vertices)
-                foreach (string node2 in network.Vertices)
-                    firstPassageTimes[indices[node1], indices[node2]] = -1;
-
-            foreach (var start in network.Vertices)
+            foreach (var edge in network.Edges)
             {
-                visited = new Dictionary<string, bool>();
-
                 
+            }
 
-                // Initialize random walker                
-                string v = start;
-                visited[v] = true;
-                firstPassageTimes[indices[v], indices[v]] = 0;
+            // Initialize visitations, stationary distribution and cumulatives ... 
+            foreach (string x in network.Vertices)
+            {
+                visitations[x] = 0;
+                stationary[x] = 0d;
 
-                int t = 0;
-                uniqueVisitations[t] = 1;
-
-                // Create a time-respecting path starting at v
-                while (uniqueVisitations[t] < cutoff * network.VertexCount && t < max_steps)
+                foreach(string s in indices_pred[x].Keys)
                 {
-                    double sample = rand.NextDouble() * sums[v];
-                    string sampled_path = null;
-                    for (int i = 0; i < cumulatives[v].Count; i++)
+                    Tuple<string, string> key = new Tuple<string,string>(s, x);
+
+                    stationary[x] += network.GetWeight(s,x);
+
+                    // Compute the transition probabilities for a edge (x,t) given that we are in (s,x)
+                    cumulatives[key] = new Dictionary<double, string>();
+                    double sum = 0d;
+
+                    foreach (string t in indices_succ[x].Keys)
                     {
-                        if (cumulatives[v].Keys.ElementAt(i) > sample)
+                        double transition_prob = 0d; 
+
+                        string two_path = s + "," + x + "," + t;
+                        transition_prob = matrices[x][indices_pred[x][s], indices_succ[x][t]];
+
+                        if (transition_prob > 0)
                         {
-                            sampled_path = cumulatives[v].Values.ElementAt(i);
-                            break;
+                            sum += transition_prob;
+                            cumulatives[key][sum] = t;
                         }
                     }
-                    if (sampled_path == null)
+                    sums[key] = sum;
+                }
+            }            
+            
+            // Draw two initial nodes ... 
+            string pred = network.RandomNode;
+            string current = network.GetRandomSuccessor(pred);
+            
+            visitations[pred] = 1;
+            visitations[current] = 1;
+            edge_visitations[new Tuple<string,string>(pred,current)] = 1;
+
+            // Run the random walk (over edges) 
+            for (int t = 0; t < max_steps; t++)
+            {
+                // The edge via which we arrived at the current node
+                Tuple<string, string> current_edge = new Tuple<string, string>(pred, current);
+
+                System.Diagnostics.Debug.Assert(sums[current_edge]>0, "Network not strongly connected!");
+
+                // Draw a sample uniformly from [0,1] and multiply it with the cumulative sum for the current edge ...
+                double sample = rand.NextDouble() * sums[current_edge];
+
+                // Determine the next transition ... 
+                string next_node = null;               
+                for (int i = 0; i < cumulatives[current_edge].Count; i++)
+                {
+                    if (cumulatives[current_edge].Keys.ElementAt(i) > sample)
+                    {
+                        next_node = cumulatives[current_edge].Values.ElementAt(i);
                         break;
-
-                    // Now we have the path ... 
-                    string[] comps = sampled_path.Split(',');
-
-                    // v is the first node of a two path, so we advance two steps ... 
-                    if (comps.Length == 3)
-                    {
-                        t++;
-                        if (!visited.ContainsKey(comps[1]))
-                        {
-                            visited[comps[1]] = true;
-                            firstPassageTimes[indices[start], indices[comps[1]]] = t;
-                        }
-                        uniqueVisitations[t] = visited.Keys.Count;
-
-                        t++;
-
-                        if (!visited.ContainsKey(comps[2]))
-                        {
-                            visited[comps[2]] = true;
-                            firstPassageTimes[indices[start], indices[comps[2]]] = t;
-                        }
-                        uniqueVisitations[t] = visited.Keys.Count;
-                        v = comps[2];
                     }
-                    // v is the second node of a two path, so we advance by one step ... 
-                    else if (comps.Length == 2)
-                    {
-                        t++;
-
-                        if (!visited.ContainsKey(comps[1]))
-                        {
-                            visited[comps[1]] = true;
-                            firstPassageTimes[indices[start], indices[comps[1]]] = t;
-                        }
-                        uniqueVisitations[t] = visited.Keys.Count;
-                        v = comps[1];
-                    }
-                    else
-                        throw new Exception("This will never happen! If you see this, I was wrong :-)");
-
                 }
+                pred = current;
+                current = next_node;
+                
+                visitations[current] = visitations[current] + 1;
+                edge_visitations[new Tuple<string, string>(pred, current)] = edge_visitations[new Tuple<string, string>(pred, current)] + 1;
+
+                tvd[t] = TVD(visitations, stationary);
             }
-
-            StringBuilder sb = new StringBuilder();
-
-            var nodes = from n in temp_net.AggregateNetwork.Vertices.AsParallel() orderby n ascending select n;
-
-            foreach (string s in nodes)
-            {
-                Console.WriteLine(s);
-                foreach (string d in nodes)
-                {
-                    sb.Append(firstPassageTimes[indices[s], indices[d]] + "\t");
-                }
-                sb.Append("\n");
-            }
-            firstPassageMatrix = sb.ToString();
-
-            return uniqueVisitations;
+            return tvd;
         }
 
-        private static Dictionary<double, string> CreateCumulative(WeightedNetwork network, string v, out double c, Dictionary<string, double[,]> matrices, Dictionary<string,Dictionary<string, int>> indices_pred, Dictionary<string,Dictionary<string, int>> indices_succ)
+        public static double TVD(Dictionary<string, int> visitations, Dictionary<string, double> stationary)
         {
-            // Pick a random two path from those where v is either the first or the second node ...
-            var cumulative = new Dictionary<double, string>();
-            c = 0d;
+            double total = 0d;
 
-            // Collect all two-paths (s, _v_ ,d)            
-            /*
-            foreach (string d in network.GetSuccessors(v))
-            {
-                double val = 0d;
-                foreach (string s in network.GetPredecessors(v))
-                   val += matrices[v][indices_pred[v][s], indices_succ[v][d]];
-                if (val > 0d)
-                {
-                    c = c + val;
-                    cumulative[c] = v + "," + d;
-                }
-            }
-             * */
+            foreach (string x in visitations.Keys)
+                total += visitations[x];           
 
-            // Two paths (_v_, x, y)
-            foreach (string x in network.GetSuccessors(v))
-            {
-                foreach (string y in network.GetSuccessors(x))
-                {
-                    double val = matrices[x][indices_pred[x][v], indices_succ[x][y]];
-                    if (val > 0d)
-                    {
-                        c = c + val;
-                        cumulative[c] = v + "," + x + "," + y;
-                    }
-                }
-            }
-            return cumulative;
-        }
-
-
-        public static Dictionary<int, int> RunRW(WeightedNetwork network, int max_steps = 100000, double cutoff = 1d, bool use_weights = true)
-        {
-            Random r = new Random();
-            Dictionary<int, int>  uniqueVisitations = new Dictionary<int, int>();
-
-            // The nodes that have already been visited 
-            Dictionary<string, bool> visited = new Dictionary<string, bool>();
-
-            // Use a node for initialization
-            string v = network.RandomNode;
-            visited[v] = true;
-            int t = 0;
-
-            uniqueVisitations[t] = 1;
-
-            // Perform random walk, either biased by the weights in the aggregate network or by the betweenness preference matrices
-            while (uniqueVisitations[t] < cutoff * network.VertexCount && t < max_steps)
-            {                                
-                v = network.GetRandomSuccessor(v, use_weights);
-
-                if (!visited.ContainsKey(v))
-                    visited[v] = true;
-                t++;
-                uniqueVisitations[t] = visited.Keys.Count;
-            }
-            return uniqueVisitations;
-        }
+            double tvd = 0d;
+            foreach (string x in visitations.Keys)
+                tvd += Math.Abs( (visitations[x]/total) - stationary[x]);
+            return 0.5d * tvd;
+        }       
     }
 }
