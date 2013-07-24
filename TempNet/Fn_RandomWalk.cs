@@ -59,7 +59,7 @@ namespace TempNet
             WeightedNetwork aggregateNet = temp_net.AggregateNetwork;
             Console.WriteLine("done.");
 
-            for (int r = 1; r <= runs; r++)
+            for (int r = 2000; r <= 2000+runs; r++)
             {
                 Console.WriteLine("Running Random walk [{0}] in mode [{1}] ...", r, type);
                 IDictionary<int, double> tvd = null;

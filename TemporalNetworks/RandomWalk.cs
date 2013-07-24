@@ -38,7 +38,7 @@ namespace TemporalNetworks
             // Aggregate network
             WeightedNetwork network = temp_net.AggregateNetwork;
 
-            // Read analytical stationary distribution (i.e. correct edge weights) from disk
+            // Read analytical stationary distribution (i.e. flow-corrected edge weights) from disk
             string[] lines = System.IO.File.ReadAllLines("stationary_dist_RM.dat");
             foreach (string x in lines)
             {
@@ -50,10 +50,10 @@ namespace TemporalNetworks
                 edge_stationary[edge] = double.Parse(split[1], System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat);
                 edge_visitations[edge] = 0;
                 network[edge] = edge_stationary[edge];
-            }
-            double total = 0d;
+            }            
 
             // Compute stationary dist of vertices ... 
+            double total = 0d;
             foreach(string x in network.Vertices)
             {
                 stationary[x] = 0d;
@@ -62,10 +62,11 @@ namespace TemporalNetworks
                 total += stationary[x];
             }
             foreach (string x in network.Vertices)
-                stationary[x] = stationary[x] / total;                      
+                stationary[x] = stationary[x] / total;    
+                  
 
             // Compute betweenness preference matrices
-            if(null_model == false)
+            if(!null_model)
                 Console.Write("Computing betweenness preference in temporal network ...");
             else
                 Console.Write("Calculating null model betweenness preference ...");
@@ -83,11 +84,6 @@ namespace TemporalNetworks
             }
             Console.WriteLine("done.");
 
-            foreach (var edge in network.Edges)
-            {
-                
-            }
-
             // Initialize visitations, stationary distribution and cumulatives ... 
             foreach (string x in network.Vertices)
             {
@@ -100,7 +96,7 @@ namespace TemporalNetworks
 
                     stationary[x] += network.GetWeight(s,x);
 
-                    // Compute the transition probabilities for a edge (x,t) given that we are in (s,x)
+                    // Compute the transition probability for a edge (x,t) given that we are in (s,x)
                     cumulatives[key] = new Dictionary<double, string>();
                     double sum = 0d;
 
@@ -135,7 +131,8 @@ namespace TemporalNetworks
                 // The edge via which we arrived at the current node
                 Tuple<string, string> current_edge = new Tuple<string, string>(pred, current);
 
-                System.Diagnostics.Debug.Assert(sums[current_edge]>0, "Network not strongly connected!");
+                // If this happens, we are stuck in a sink, i.e. there is no out edge
+                System.Diagnostics.Debug.Assert(sums[current_edge]>0, string.Format("Network not strongly connected! RW stuck after passing through edge {0}", current_edge));
 
                 // Draw a sample uniformly from [0,1] and multiply it with the cumulative sum for the current edge ...
                 double sample = rand.NextDouble() * sums[current_edge];

@@ -567,7 +567,7 @@ namespace TemporalNetworks
                 this[t].RemoveAll(x => {
                     bool remove = (x.Item1 == node || x.Item2 == node);
                     return remove;
-                });
+                });                
             }
         }
 
@@ -589,6 +589,8 @@ namespace TemporalNetworks
                     bool remove = (x.Item1 == tuple.Item1 && x.Item2 == tuple.Item2) || (x.Item1 == tuple.Item2 && x.Item2 == tuple.Item1);
                     return remove;
                 });
+                if (this[t].Count == 0)
+                    this[t].Add(new Tuple<string, string>("dummy_" + t, "dummy_" + t));
             }
         }
     }

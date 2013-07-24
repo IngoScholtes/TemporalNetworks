@@ -33,8 +33,11 @@ namespace TempNet
 
             foreach (string x in filtered_edges)
             {
-                string[] comps = x.Split(';');
-                temp_net.Remove(new Tuple<string, string>(comps[0], comps[1]));
+                if (x.Contains(";"))
+                {
+                    string[] comps = x.Split(';');
+                    temp_net.Remove(new Tuple<string, string>(comps[0], comps[1]));
+                }
             }
 
             TemporalNetwork.SaveToFile(file_new, temp_net);

@@ -41,15 +41,15 @@ namespace TempNet
             TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected: true);
             Console.WriteLine(" done.");
 
-            Console.Write("Reducing to two path networks ...");
-            temp_net.ReduceToTwoPaths();
-            Console.WriteLine( "done.");
-
             Console.WriteLine(temp_net.Length);
             Console.Write("Applying agggregation window [{0}] ...", aggregationWindow);
             temp_net.AggregateTime(aggregationWindow);
             Console.WriteLine("done.");
             Console.WriteLine(temp_net.Length);
+
+            Console.Write("Reducing to two path networks ...");
+            temp_net.ReduceToTwoPaths();
+            Console.WriteLine("done.");
 
             if (!two_path)
             {
