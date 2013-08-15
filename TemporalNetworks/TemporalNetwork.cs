@@ -298,7 +298,7 @@ namespace TemporalNetworks
             foreach(char c in split_chars)
             {                
                 header = lines[0].Split(c);
-                if (header.Length >= 2 && header.Contains("node1") && header.Contains("node2"))
+                if (header.Length >= 2 && ((header.Contains("node1") && header.Contains("node2")) || (header.Contains("source") && header.Contains("target"))))
                 {
                     split_char = c;
                     break;
@@ -315,9 +315,9 @@ namespace TemporalNetworks
             for (int i = 0; i < header.Length; i++)
                 if (header[i] == "time")
                     time_ix = i;
-                else if (header[i] == "node1")
+                else if (header[i] == "node1" || header[i] == "source")
                     source_ix = i;
-                else if (header[i] == "node2")
+                else if (header[i] == "node2" || header[i] == "target")
                     target_ix = i;
 
             // If there is no source and target column
@@ -551,13 +551,31 @@ namespace TemporalNetworks
                 {
                     var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
                     if(P.ContainsKey(two_path))
-                        sw.Write("{0} ", string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target)]));
+                        sw.Write("{0} ", string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[two_path]));
                     else 
                         sw.Write("0 ");
                 }
                 sw.WriteLine();
             }
             sw.Close();
+
+            // Write edge list that allows import in gephi
+            string file_edges = file + ".edges";
+            sw = new System.IO.StreamWriter(file_edges);
+
+            sw.WriteLine("source target weight");
+           
+            foreach (var source in from x in edge_nodes orderby x select x)
+                foreach (var target in from x in edge_nodes orderby x select x)
+                {
+                    var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
+                    if (P.ContainsKey(two_path) && P[two_path] > 0d)
+                    {
+                        sw.WriteLine("\"{0}\" \"{1}\" {2}", source, target, string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[two_path])); 
+                    }
+                }
+            sw.Close();
+
         }
 
         public void Remove(string node)
