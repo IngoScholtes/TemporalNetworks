@@ -17,7 +17,7 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [twopath_network=false]");
+                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [weighted_aggregate_networks=false]");
                 return;
             }
 
@@ -53,20 +53,24 @@ namespace TempNet
 
             if (!two_path)
             {
-                Console.Write("Saving network ...");
+                Console.Write("Saving temporal network ...");
                 TemporalNetwork.SaveToFile(out_file, temp_net);
                 Console.WriteLine(" done.");
             }
             else
             {
-                WeightedNetwork net = new WeightedNetwork();
-                foreach(string tp in temp_net.TwoPathWeights.Keys)
-                {
-                    string[] comps = tp.Split(',');
-                    net.AddEdge(comps[0], comps[2], EdgeType.Directed, temp_net.TwoPathWeights[tp]);
-                }
-                Console.Write("Saving weighted two-path network ...");
-                WeightedNetwork.SaveToFile(out_file, net);
+                //WeightedNetwork net = new WeightedNetwork();
+                //foreach(string tp in temp_net.TwoPathWeights.Keys)
+                //{
+                //    string[] comps = tp.Split(',');
+                //    net.AddEdge(comps[0], comps[2], EdgeType.Directed, temp_net.TwoPathWeights[tp]);
+                //}
+                Console.Write("Saving weighted first-order aggregate network ...");
+                WeightedNetwork.SaveToFile(out_file+".1.edges", temp_net.AggregateNetwork);
+                Console.WriteLine(" done.");
+
+                Console.Write("Saving weighted second-order aggregate network ...");
+                WeightedNetwork.SaveToFile(out_file+".2.edges", temp_net.SecondOrderAggregateNetwork);
                 Console.WriteLine(" done.");
             }
         }

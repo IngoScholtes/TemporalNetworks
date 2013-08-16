@@ -424,8 +424,10 @@ namespace TemporalNetworks
         {
             StringBuilder sb = new StringBuilder();
 
+            sb.AppendLine("source target weight");
+
             foreach (var edge in net.Edges)
-                sb.AppendLine(string.Format("{0} {1} {2}", edge.Item1, edge.Item2, string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0}", net[edge])));
+                sb.AppendLine(string.Format("{0} {1} {2}", edge.Item1, edge.Item2, string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", net[edge])));
 
             System.IO.File.WriteAllText(path, sb.ToString());
         }

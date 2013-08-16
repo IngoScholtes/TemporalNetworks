@@ -15,6 +15,11 @@ namespace TemporalNetworks
         /// </summary>
         WeightedNetwork _cachedWeightedNetwork = null;
 
+        /// <summary>
+        /// A cached version of the weighted network (will be recomputed only when needed)
+        /// </summary>
+        WeightedNetwork _cachedWeightedNetworkSecondOrder = null;
+
         bool _stripEdges = true;
 
         /// <summary>
@@ -89,6 +94,15 @@ namespace TemporalNetworks
                 if (_twoPathsByNode == null || _cachedWeightedNetwork == null)
                     ReduceToTwoPaths();
                 return _cachedWeightedNetwork;
+            }
+        }
+
+        public WeightedNetwork SecondOrderAggregateNetwork
+        {
+            get {
+                if (_twoPathsByNode == null || _cachedWeightedNetworkSecondOrder == null)
+                    ReduceToTwoPaths();
+                return _cachedWeightedNetworkSecondOrder;
             }
         }
 
@@ -236,14 +250,17 @@ namespace TemporalNetworks
                     this[t] = two_path_edges[t];
             }
 
-            // Build the aggregate network with the correct weights ... 
+            // Build the aggregate networks with the correct weights ... 
             _cachedWeightedNetwork = new WeightedNetwork();
+            _cachedWeightedNetworkSecondOrder = new WeightedNetwork();
 
             foreach (var two_path in _twoPathWeights.Keys)
             {
                 string[] split = two_path.Split(',');
                 _cachedWeightedNetwork.AddEdge(split[0], split[1], EdgeType.Directed, _twoPathWeights[two_path]);
-                _cachedWeightedNetwork.AddEdge(split[1], split[2], EdgeType.Directed, _twoPathWeights[two_path]);                
+                _cachedWeightedNetwork.AddEdge(split[1], split[2], EdgeType.Directed, _twoPathWeights[two_path]);
+
+                _cachedWeightedNetworkSecondOrder.AddEdge(string.Format("({0};{1})", split[0], split[1]), string.Format("({0};{1})", split[1], split[2]), EdgeType.Directed, _twoPathWeights[two_path]);
             }
 
             foreach (string v in _cachedWeightedNetwork.Vertices)
@@ -485,97 +502,6 @@ namespace TemporalNetworks
                             return false;
                 }
             return true;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public void WriteTwopathTransitionMatrix(string file)
-        {
-            // Dictionary that takes transition probabilities for pairs of edges (i.e. two-paths)
-            var P = new Dictionary<Tuple<Tuple<string,string>, Tuple<string,string>>, double>();
-
-            var edge_nodes = new List<Tuple<string,string>>();
-
-            foreach (var x in _twoPathWeights.Keys)
-            {
-                string[] nodes = x.Split(',');
-                var source = new Tuple<string, string>(nodes[0], nodes[1]);
-                var target = new Tuple<string, string>(nodes[1], nodes[2]);
-
-                if (!edge_nodes.Contains(source))
-                    edge_nodes.Add(source);
-                if(!edge_nodes.Contains(target))
-                    edge_nodes.Add(target);
-
-                var two_path = new Tuple<Tuple<string, string>,Tuple<string, string>>(source, target);
-                P[two_path] = _twoPathWeights[x];
-            }
-
-            // make matrix row-stochastic           
-            foreach (var source in edge_nodes)
-            {
-                double sum = 0d;
-                foreach (var target in edge_nodes)
-                {
-                    var two_path = new Tuple<Tuple<string,string>,Tuple<string,string>>(source,target);
-                    if (P.ContainsKey(two_path))
-                        sum += P[two_path];
-                    else
-                        P[two_path] = 0;
-                }
-                foreach (var target in edge_nodes)
-                {
-                    var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
-                    if (P.ContainsKey(two_path) && sum > 0)
-                    {
-                        P[two_path] /= sum;
-                    }
-                }
-            }
-
-            System.IO.StreamWriter sw = new System.IO.StreamWriter(file);
-
-            // Column header
-            foreach(var target in from x in edge_nodes orderby x select x)
-                sw.Write(target.Item1+";"+target.Item2+" ");
-
-            sw.WriteLine();
-
-            foreach (var source in from x in edge_nodes orderby x select x)
-            {
-                sw.Write(source.Item1+";"+source.Item2+" ");
-                foreach(var target in from x in edge_nodes orderby x select x)
-                {
-                    var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
-                    if(P.ContainsKey(two_path))
-                        sw.Write("{0} ", string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[two_path]));
-                    else 
-                        sw.Write("0 ");
-                }
-                sw.WriteLine();
-            }
-            sw.Close();
-
-            // Write edge list that allows import in gephi
-            string file_edges = file + ".edges";
-            sw = new System.IO.StreamWriter(file_edges);
-
-            sw.WriteLine("source target weight");
-           
-            foreach (var source in from x in edge_nodes orderby x select x)
-                foreach (var target in from x in edge_nodes orderby x select x)
-                {
-                    var two_path = new Tuple<Tuple<string, string>, Tuple<string, string>>(source, target);
-                    if (P.ContainsKey(two_path) && P[two_path] > 0d)
-                    {
-                        sw.WriteLine("\"{0}\" \"{1}\" {2}", source, target, string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[two_path])); 
-                    }
-                }
-            sw.Close();
-
         }
 
         public void Remove(string node)

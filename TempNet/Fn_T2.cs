@@ -45,13 +45,56 @@ namespace TempNet
             temp_net.AggregateTime(aggregationWindow);
             Console.WriteLine("done, time steps after = {0}", temp_net.Length);
 
-            Console.Write("Preparing temporal network ...");
+            Console.Write("Building aggregate networks ...");
             temp_net.ReduceToTwoPaths();
             Console.WriteLine(" done.");
 
             Console.Write("Writing transition matrix ...");
-            temp_net.WriteTwopathTransitionMatrix(out_file);            
+            WriteTwopathTransitionMatrix(temp_net, out_file);
             Console.WriteLine("done.");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static void WriteTwopathTransitionMatrix(TemporalNetwork temp_net, string file)
+        {
+            // Dictionary that takes transition probabilities for pairs of edges (i.e. two-paths)
+            var P = new Dictionary<Tuple<string, string>, double>();
+
+            var edge_nodes = temp_net.SecondOrderAggregateNetwork.Vertices;
+
+            foreach (var source in edge_nodes)
+            {
+                foreach (var target in edge_nodes)
+                {
+                    var two_path = new Tuple<string, string>(source, target);
+                    if (temp_net.SecondOrderAggregateNetwork.ContainsKey(two_path))
+                        P[two_path] = temp_net.SecondOrderAggregateNetwork[two_path] / temp_net.SecondOrderAggregateNetwork.GetCumulativeOutWeight(source);
+                    else
+                        P[two_path] = 0d;
+                }
+            }
+
+            System.IO.StreamWriter sw = new System.IO.StreamWriter(file);
+
+            // Write column header
+            foreach (var target in edge_nodes)
+                sw.Write(target + " ");
+            sw.WriteLine();
+
+            foreach (var source in edge_nodes)
+            {
+                sw.Write(source + " ");
+                foreach (var target in edge_nodes)
+                {
+                    var two_path = new Tuple<string, string>(source, target);
+                    sw.Write("{0} ", string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0:0.000000}", P[two_path]));
+                }
+                sw.WriteLine();
+            }
+            sw.Close();
         }
     }
 }

@@ -87,6 +87,17 @@ namespace TemporalNetworksTest
             Assert.AreEqual(test.AggregateNetwork.EdgeCount, 8);
             Assert.AreEqual(test.AggregateNetwork.CumulativeWeight, 22);
 
+            // The second-order aggregate network should countain edges representing 6 different two-paths ... 
+            Assert.AreEqual(test.SecondOrderAggregateNetwork.EdgeCount, 6);
+            // ... with a total weight of 11
+            Assert.AreEqual(test.SecondOrderAggregateNetwork.CumulativeWeight, 11);
+
+            Assert.AreEqual(test.SecondOrderAggregateNetwork[new Tuple<string,string>("(c;e)","(e;f)")], 5.5d);
+            Assert.AreEqual(test.SecondOrderAggregateNetwork[new Tuple<string, string>("(g;e)", "(e;f)")], 0.5d);
+            Assert.AreEqual(test.SecondOrderAggregateNetwork[new Tuple<string, string>("(e;f)", "(f;e)")], 1d);
+            Assert.AreEqual(test.SecondOrderAggregateNetwork[new Tuple<string, string>("(f;e)", "(e;b)")], 1d);
+            Assert.AreEqual(test.SecondOrderAggregateNetwork[new Tuple<string, string>("(a;e)", "(e;g)")], 2d);
+            Assert.AreEqual(test.SecondOrderAggregateNetwork[new Tuple<string, string>("(b;e)", "(e;g)")], 1d);
 
             // Check whether all the weights are correctly computed ... 
             Assert.AreEqual(test.AggregateNetwork[new Tuple<string, string>("e", "f")], 7, "The weight of egde (e,f) in the aggregate network is wrong!");
@@ -138,7 +149,6 @@ namespace TemporalNetworksTest
         {
             TemporalNetwork net = ExampleData.GetTestNetwork3();
             net.AggregateTime(3);
-
         }
     }
 }
