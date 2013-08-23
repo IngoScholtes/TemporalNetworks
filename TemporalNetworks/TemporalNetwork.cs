@@ -298,7 +298,7 @@ namespace TemporalNetworks
         public static TemporalNetwork ReadFromFile(string path, bool undirected = false)
         {
             TemporalNetwork temp_net = new TemporalNetwork();
-
+            
             // Read all data from file 
             string[] lines = System.IO.File.ReadAllLines(path);
 
@@ -340,7 +340,6 @@ namespace TemporalNetworks
             // If there is no source and target column
             if (source_ix < 0 || target_ix < 0)
                 return temp_net;
-
             for(int i=1; i< lines.Length; i++)
             {
                 string[] components = lines[i].Split(split_char);
@@ -385,6 +384,8 @@ namespace TemporalNetworks
         {
             if (!this.ContainsKey(time))
                 this[time] = new List<Tuple<string, string>>();
+            if (!this.ContainsKey(time+1))
+                this[time+1] = new List<Tuple<string, string>>();
             this[time].Add(new Tuple<string, string>(v, w));
 
             // Invalidate previously preprocessed data
