@@ -5,7 +5,7 @@ This project implements an Open Source C# library as well as a set of command li
 
 ![Screenshot of command line tools](https://dl.dropbox.com/u/10482894/Screenshot_TempNet.png)
 
-The command line tools and the library can be used to compare weighted aggregate networks from temporal sequences of edges, create tikz figures of temporal unfoldings of  dynamic networks, compute betweenness preference distributions of empirical networks and generate null model realizations based on empirical data. An example for a time-unfolded network with 6 nodes and 10 time steps is shown in the following figure.
+The command line tools and the library can be used to compare weighted aggregate networks from temporal sequences of edges, create tikz figures of temporal unfoldings of dynamic networks, compute betweenness preference distributions of empirical networks, generate null model realizations based on empirical data and create second-order aggregate networks as introduced in [2]. An example for a time-unfolded network with 6 nodes and 10 time steps is shown in the following figure.
 
 ![Example output of time-unfolded representation of temporal network with 6 nodes and 10 time steps](https://dl.dropbox.com/u/10482894/TikzOutput_TempNet.png)
 
@@ -44,4 +44,5 @@ TemporalNetworksTest
 A set of example data and unit tests to make sure that future updates do not break the correctness of the computations as defined in: 
 
 
-[1] *R. Pfitzner, I. Scholtes, A. Garas, C. J. Tessone, F. Schweitzer:* **"Betweenness Preference: Quantifying Correlations in The Topological Dynamics of Temporal Networks"**, Physical Review Letters, Vol. 110, May 10 2013
+[1] *R. Pfitzner, I. Scholtes, A. Garas, C. J. Tessone, F. Schweitzer:* **"Betweenness Preference: Quantifying Correlations in The Topological Dynamics of Temporal Networks"**, Physical Review Letters, Vol. 110, May 10 2013, ![10.1103/PhysRevLett.110.198701](http://prl.aps.org/abstract/PRL/v110/i19/e198701)
+[2] *I. Scholtes, N. Wider, R. Pfitzner, A. Garas, C. J. Tessone, F. Schweitzer: **"Slow-Down vs. Speed-Up of Information Diffusion in Non-Markovian Temporal Networks"**, ![arXiv:1307.4030](http://arxiv.org/abs/1307.4030)
