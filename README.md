@@ -44,5 +44,5 @@ TemporalNetworksTest
 A set of example data and unit tests to make sure that future updates do not break the correctness of the computations as defined in: 
 
 
-[1] *R. Pfitzner, I. Scholtes, A. Garas, C. J. Tessone, F. Schweitzer:* **"Betweenness Preference: Quantifying Correlations in The Topological Dynamics of Temporal Networks"**, Physical Review Letters, Vol. 110, May 10 2013, ![10.1103/PhysRevLett.110.198701](http://prl.aps.org/abstract/PRL/v110/i19/e198701)
-[2] *I. Scholtes, N. Wider, R. Pfitzner, A. Garas, C. J. Tessone, F. Schweitzer: **"Slow-Down vs. Speed-Up of Information Diffusion in Non-Markovian Temporal Networks"**, ![arXiv:1307.4030](http://arxiv.org/abs/1307.4030)
+[1] *R. Pfitzner, I. Scholtes, A. Garas, C. J. Tessone, F. Schweitzer:* **"Betweenness Preference: Quantifying Correlations in The Topological Dynamics of Temporal Networks"**, Physical Review Letters, Vol. 110, May 10 2013, http://prl.aps.org/abstract/PRL/v110/i19/e198701
+[2] *I. Scholtes, N. Wider, R. Pfitzner, A. Garas, C. J. Tessone, F. Schweitzer: **"Slow-Down vs. Speed-Up of Information Diffusion in Non-Markovian Temporal Networks"**, http://arxiv.org/abs/1307.4030
