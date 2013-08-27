@@ -18,7 +18,7 @@ namespace TempNet
 
             if (args.Length < 2)
             {
-                Console.WriteLine("Usage: TempNet cex [output_file]");
+                Console.WriteLine("Usage: TempNet example [output_file]");
                 return;
             }
 

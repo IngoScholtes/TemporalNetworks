@@ -384,6 +384,7 @@ namespace TemporalNetworks
         {
             if (!this.ContainsKey(time))
                 this[time] = new List<Tuple<string, string>>();
+            /// TODO: Is this needed?
             if (!this.ContainsKey(time+1))
                 this[time+1] = new List<Tuple<string, string>>();
             this[time].Add(new Tuple<string, string>(v, w));
