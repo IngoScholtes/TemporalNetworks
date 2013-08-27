@@ -21,6 +21,19 @@ namespace TemporalNetworks
             WeightedNetwork net = WeightedNetwork.FromTemporalNetwork(temp_net);
 
             StringBuilder strB = new StringBuilder();
+            strB.AppendLine(@"\documentclass{article}
+\usepackage{tikz}
+
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+
+\begin{document}
+\begin{center}");
             strB.AppendLine("\\newcounter{a}"); 
             
             strB.AppendLine("\\begin{tikzpicture}[->,>=stealth',auto,scale=0.5, every node/.style={scale=0.9}]");
@@ -68,7 +81,9 @@ namespace TemporalNetworks
                 }
             }
             strB.AppendLine(";");
-            strB.AppendLine("\\end{tikzpicture} ");
+            strB.AppendLine(@"\end{tikzpicture} 
+\end{center}
+\end{document}");
 
             System.IO.File.WriteAllText(path, strB.ToString());
         }
