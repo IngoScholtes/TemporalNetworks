@@ -26,7 +26,7 @@ The project consists of the following components (which you will find as separat
 TempNet
 ---
 
-A set of command line tools that can be used to analyze betweenness preference in temporal networks
+A set of command line tools that can be used to analyze, visualize and process temporal networks
 
 TemporalNetworks
 ---
