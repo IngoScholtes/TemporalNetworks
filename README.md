@@ -5,9 +5,13 @@ This project implements an Open Source C# library as well as a set of command li
 
 ![Screenshot of command line tools](https://dl.dropbox.com/u/10482894/Screenshot_TempNet.png)
 
-The command line tools and the library can be used to compare weighted aggregate networks from temporal sequences of edges, create tikz figures of temporal unfoldings of dynamic networks, compute betweenness preference distributions of empirical networks, generate null model realizations based on empirical data and create second-order aggregate networks as introduced in [2]. An example for a time-unfolded network with 6 nodes and 10 time steps is shown in the following figure.
+The command line tools and the library can be used to compare weighted aggregate networks from temporal sequences of edges, create tikz and png figures of temporal unfoldings of dynamic networks, compute betweenness preference distributions of empirical networks, generate null model realizations based on empirical data and create second-order aggregate networks as introduced in [2]. An example for a time-unfolded network with 6 nodes and 10 time steps is shown in the following figure.
 
 ![Example output of time-unfolded representation of temporal network with 6 nodes and 10 time steps](https://dl.dropbox.com/u/10482894/TikzOutput_TempNet.png)
+
+The next figure shows an example of a png visualization of interaction patterns of an actual dynamic social network: 
+
+![Example output of interaction pattern visualization of dynamic social network](https://dl.dropboxusercontent.com/u/10482894/png_example.png)
 
 Main features
 ---
