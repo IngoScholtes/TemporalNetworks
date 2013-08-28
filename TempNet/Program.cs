@@ -20,6 +20,7 @@ namespace TempNet
                 Console.WriteLine("\t\t spreading \t Run SI spreading process on a temporal network");
                 Console.WriteLine("\t\t rw \t\t Run random walk process on a weighted aggregate network");
                 Console.WriteLine("\t\t tikz \t\t Generate a tikz visualization of a time-unfolded temporal network");
+                Console.WriteLine("\t\t visualize \t\t Generate a bitmap visualization of a time-unfolded temporal network");
                 Console.WriteLine("\t\t example \t Create a simple example for a temporal network");
                 Console.WriteLine("\t\t filter \t Removes edges from a temporal network");
                 Console.WriteLine("\t\t match \t\t Check whether the aggregated version of two temporal networks are identical");
@@ -55,6 +56,8 @@ namespace TempNet
                 Fn_T2.Run(args);
             else if (function == "filter")
                 Fn_Filter.Run(args);
+            else if (function == "visualize")
+                Fn_Visualize.Run(args);
             else
                 Console.WriteLine("Unknown function {0}", function);
         }
