@@ -88,21 +88,31 @@ namespace TemporalNetworks
             RandomWalkMode = walkmode;
             _network = network;
             rand = new Random();
+            _current_visitations = new Dictionary<string, int>();
 
             // Set visitations to 0
             foreach (string v in network.AggregateNetwork.Vertices)
                 _current_visitations[v] = 0;
 
+            // Reduce first and second-order aggregate network to strongly connected component
+            _network.AggregateNetwork.ReduceToLargestStronglyConnectedComponent();
+            _network.SecondOrderAggregateNetwork.ReduceToLargestStronglyConnectedComponent();
+
             // Initialize random walk 
-            CurrentEdge = network.AggregateNetwork.RandomEdge;
+            CurrentEdge = StringToTuple(_network.SecondOrderAggregateNetwork.RandomNode);
             CurrentNode = CurrentEdge.Item2;
             _current_visitations[CurrentNode] = 1;
             Time = 1;
 
             // Compute stationary distribution
-            _stationary_dist = ComputeStationaryDist(network);
+            _stationary_dist = ComputeStationaryDist();
+
+            InitializeCumulatives();
         }
 
+        /// <summary>
+        /// Initializes all vectors that will be used for sampling transition probabilities in first and second-order network
+        /// </summary>
         private void InitializeCumulatives()
         {
             cumulatives_first = new Dictionary<string, Dictionary<double, string>>();
@@ -111,7 +121,7 @@ namespace TemporalNetworks
             cumulatives_second = new Dictionary<Tuple<string, string>, Dictionary<double, Tuple<string, string>>>();
             sums_second = new Dictionary<Tuple<string, string>, double>();
             
-            // Initializesampling vectors for walk in static first-order network
+            // Initialize sampling vectors for walk in static first-order network
             foreach (var v in _network.AggregateNetwork.Vertices)
             {
                 cumulatives_first[v] = new Dictionary<double,string>();
@@ -133,24 +143,38 @@ namespace TemporalNetworks
                 foreach (string e2 in _network.SecondOrderAggregateNetwork.GetSuccessors(e1))
                 {
                     var e2_t = StringToTuple(e2);
-                    sum += _network.AggregateNetwork.GetWeight(e1, e2);
+                    sum += _network.SecondOrderAggregateNetwork.GetWeight(e1, e2);
                     cumulatives_second[e1_t][sum] = e2_t;
                 }
                 sums_second[e1_t] = sum;
             }                    
         }
 
+        /// <summary>
+        /// Convert an edge in string format to tuple format
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <returns></returns>
         private static Tuple<string, string> StringToTuple(string edge)
         {
             string[] splitted = edge.Split(';');
-            return new Tuple<string, string>(splitted[0].TrimStart('('), splitted[0].TrimEnd(')'));
+            return new Tuple<string, string>(splitted[0].TrimStart('('), splitted[1].TrimEnd(')'));
         }
 
+        /// <summary>
+        /// Convert an edge in tuple format to string format
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <returns></returns>
         private static string TupleToString(Tuple<string, string> edge)
         {
             return string.Format("({0};{1})", edge.Item1,edge.Item2);
         }
 
+
+        /// <summary>
+        /// Performs one transition of the random walk process. 
+        /// </summary>
         public void Step()
         {            
             switch(RandomWalkMode)
@@ -187,7 +211,7 @@ namespace TemporalNetworks
                 }
                 case TemporalNetworks.RandomWalkMode.StaticSecondOrder:
                 {
-                    // Draw a sample uniformly from [0,1] and multiply it with the cumulative sum for the current node ...
+                    // Draw a sample uniformly from [0,1] and multiply it with the cumulative sum for the current edge ...
                     double sample = rand.NextDouble() * sums_second[CurrentEdge];
 
                     // Determine the next transition ... 
@@ -201,7 +225,7 @@ namespace TemporalNetworks
                         }
                     }
 
-                    System.Diagnostics.Debug.Assert(next_edge != null, "Error! Random walk cannot find a transition from edge {0}", TupleToString(CurrentEdge));
+                    // System.Diagnostics.Debug.Assert(next_edge != null, "Error! Random walk cannot find a transition from edge {0}", TupleToString(CurrentEdge));
 
                     CurrentEdge = next_edge;
                     CurrentNode = next_edge.Item2;
@@ -213,21 +237,34 @@ namespace TemporalNetworks
             }
         }
 
-        private static Dictionary<string, double> ComputeStationaryDist(TemporalNetwork network)
+        /// <summary>
+        /// Computes the expected stationary distribution of a random walk in the weighted aggregate network
+        /// NOTE: At present, this implementation only works correctly if the network is undirected!
+        /// </summary>
+        /// <param name="network"></param>
+        /// <returns></returns>
+        private Dictionary<string, double> ComputeStationaryDist()
         {
             Dictionary<string, double> dist = new Dictionary<string, double>();
 
-            foreach (var node in network.AggregateNetwork.Vertices)
+            foreach (var node in _network.AggregateNetwork.Vertices)
                 dist[node] = 0d;
 
-            foreach (var edge in network.AggregateNetwork.Edges)
-            {
-                dist[edge.Item2] += network.AggregateNetwork.GetWeight(edge);
-                dist[edge.Item1] += network.AggregateNetwork.GetWeight(edge);
+            if(RandomWalkMode == TemporalNetworks.RandomWalkMode.StaticFirstOrder)
+                foreach (var node in _network.AggregateNetwork.Vertices)
+                    dist[node] =  _network.AggregateNetwork.GetCumulativeInWeight(node) /  _network.AggregateNetwork.CumulativeWeight;
+            else if (RandomWalkMode == TemporalNetworks.RandomWalkMode.StaticSecondOrder)
+            { 
+                double sum = 0d;
+                foreach(var edge in _network.SecondOrderAggregateNetwork.Vertices)
+                {
+                    var edge_t = StringToTuple(edge);
+                    dist[edge_t.Item2] += _network.SecondOrderAggregateNetwork.GetCumulativeInWeight(edge);
+                    sum += _network.SecondOrderAggregateNetwork.GetCumulativeInWeight(edge);
+                }
+                foreach (var node in _network.AggregateNetwork.Vertices)
+                    dist[node] = dist[node] / sum;
             }
-
-            foreach (var node in network.AggregateNetwork.Vertices)
-                dist[node] = dist[node] / 2d * network.AggregateNetwork.CumulativeWeight;
 
             return dist; 
         }           

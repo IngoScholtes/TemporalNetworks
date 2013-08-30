@@ -16,7 +16,7 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet rw [network_file] [output_file] [RWMode=static_first] [aggregationWindow=1] [runs=1] [length=100000]");
+                Console.WriteLine("Usage: TempNet rw [network_file] [output_file] [RWMode=static_first] [aggregationWindow=1] [steps=1000]");
                 Console.WriteLine("\t where RWMode can be ... ");
                 Console.WriteLine("\t static_first\t Performs a random walk on the aggregate network that considers betweenness preferences computed from the temporal network");
                 Console.WriteLine("\t static_second\t ...");
@@ -25,7 +25,7 @@ namespace TempNet
             string out_file = args[2];
             RandomWalkMode mode = RandomWalkMode.StaticFirstOrder;
             int runs = 1;
-            int length = 100000;
+            int length = 1000;
 
             int aggregationWindow = 1;
             if (args.Length >= 4)
@@ -65,26 +65,24 @@ namespace TempNet
             Console.Write("Building aggregate network...");
             WeightedNetwork aggregateNet = temp_net.AggregateNetwork;
             Console.WriteLine("done.");
+            
+            Console.WriteLine("Starting random walk ...");
 
-            for (int r = 2000; r <= 2000+runs; r++)
+            Dictionary<int, double> tvd = new Dictionary<int, double>();
+            RandomWalk walk = new RandomWalk(temp_net, mode);
+            for (int t = 0; t < length; t++)
             {
-                Console.WriteLine("Running Random walk [{0}] in mode [{1}] ...", r, mode);
-
-                Dictionary<int, double> tvd = new Dictionary<int, double>();
-                RandomWalk walk = new RandomWalk(temp_net, mode);
-                for (int t = 0; t < length; t++)
-                {
-                    walk.Step();
-                    tvd[t] = walk.TVD;
-                }
-
-                Console.Write("Writing time series of total variation distance ...");
-                StringBuilder sb = new StringBuilder();
-                foreach (var step in tvd)
-                    sb.AppendLine(string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0} {1}", step.Key, step.Value));
-                System.IO.File.WriteAllText(out_file+"_r_"+r+".dat", sb.ToString());
-                Console.WriteLine(" done.");
+                walk.Step();
+                tvd[t] = walk.TVD;
+                Console.WriteLine("Node = {0}, step = {1}, tvd={2:0.000}", walk.CurrentNode, t, tvd[t]);
             }
+
+            Console.Write("Writing time series of total variation distance ...");
+            StringBuilder sb = new StringBuilder();
+            foreach (var step in tvd)
+                sb.AppendLine(string.Format(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat, "{0} {1}", step.Key, step.Value));
+            System.IO.File.WriteAllText(out_file+".dat", sb.ToString());
+            Console.WriteLine(" done.");
         }
     }
 }

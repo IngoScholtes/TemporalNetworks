@@ -210,6 +210,18 @@ namespace TemporalNetworks
             }
         }
 
+        private void RemoveVertex(string node)
+        {
+            // Set all weights to zer
+            foreach (var edge in this.Keys.ToArray())
+            {
+                if(edge.Item1 == node || edge.Item2 == node)
+                    if(ContainsKey(edge))
+                        this.AddToWeight(edge.Item1, edge.Item2, -GetWeight(edge));
+            }
+            _vertices.Remove(node);                        
+        }
+
         /// <summary>
         /// Registers a directed edge with the predecessor and successor dictionaries (to speed up later access)
         /// </summary>
@@ -484,6 +496,69 @@ namespace TemporalNetworks
                 if (this.Count == 0)
                     return 0;
                 return this.Values.Min();
+            }
+        }
+
+        private int comp_index = 0;
+        private Dictionary<string, int> index;
+        private Dictionary<string, int> lowlink;
+        private Stack<string> S;
+        private List<List<string>> components;
+
+        /// <summary>
+        /// Removes all nodes and edges that do not belong to the strongly connected component
+        /// </summary>
+        public void ReduceToLargestStronglyConnectedComponent()
+        {
+            comp_index = 0;
+            index = new Dictionary<string, int>();
+            lowlink = new Dictionary<string, int>();
+            S = new Stack<string>();
+            components = new List<List<string>>();
+
+            foreach (string v in Vertices)
+                if (!index.ContainsKey(v))
+                    strongconnect(v);
+
+            // Get the largest strongly connected component
+            var lcc = components.OrderByDescending(c => c.Count).First();
+
+            foreach (var node in Vertices.ToArray())
+                if (!lcc.Contains(node))
+                    RemoveVertex(node);
+        }       
+
+        // Tarjans algorithm 
+        private void strongconnect(string v)
+        {
+            index[v] = comp_index;
+            lowlink[v] = comp_index;
+            comp_index++;
+            S.Push(v);
+
+            foreach (string w in GetSuccessors(v))
+            {
+                if (!index.ContainsKey(w))
+                {
+                    strongconnect(w);
+                    lowlink[v] = Math.Min(lowlink[v], lowlink[w]);
+                }
+                else if (S.Contains(w))
+                {
+                    lowlink[v] = Math.Min(lowlink[v], index[w]);
+                }
+            }
+            
+            if (lowlink[v] == index[v])
+            {
+                List<string> component = new List<string>();
+                string w = null;
+                do
+                {
+                  w = S.Pop();
+                  component.Add(w);
+                } while (v != w);
+                components.Add(component);
             }
         }
     }
