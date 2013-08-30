@@ -16,20 +16,27 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet rw [network_file] [output_file] [WalkType=random] [aggregationWindow=1] [runs=1] [length=100000]");
-                Console.WriteLine("\t where WalkType can be ... ");
-                Console.WriteLine("\t bwp_pres\t Performs a random walk on the aggregate network that considers betweenness preferences computed from the temporal network");
-                Console.WriteLine("\t bwp_null\t ...");
+                Console.WriteLine("Usage: TempNet rw [network_file] [output_file] [RWMode=static_first] [aggregationWindow=1] [runs=1] [length=100000]");
+                Console.WriteLine("\t where RWMode can be ... ");
+                Console.WriteLine("\t static_first\t Performs a random walk on the aggregate network that considers betweenness preferences computed from the temporal network");
+                Console.WriteLine("\t static_second\t ...");
                 return;
             }
             string out_file = args[2];
-            string type = "bwp_pres";
+            RandomWalkMode mode = RandomWalkMode.StaticFirstOrder;
             int runs = 1;
             int length = 100000;
 
             int aggregationWindow = 1;
             if (args.Length >= 4)
-                type = args[3];
+            {
+                if (args[3] == "static_second")
+                    mode = RandomWalkMode.StaticSecondOrder;
+                else
+                {
+                    Console.WriteLine("Unknown walk mode '{0}'", args[3]);
+                }
+            }
             if (args.Length >= 5)
                 aggregationWindow = int.Parse(args[4]);
             if (args.Length >= 6)
@@ -61,16 +68,14 @@ namespace TempNet
 
             for (int r = 2000; r <= 2000+runs; r++)
             {
-                Console.WriteLine("Running Random walk [{0}] in mode [{1}] ...", r, type);
-                IDictionary<int, double> tvd = null;
-                if (type == "bwp_pres")
-                    tvd = RandomWalk.RunRW_BWP(temp_net, length, null_model: false);
-                else if (type == "bwp_null")
-                    tvd = RandomWalk.RunRW_BWP(temp_net, length, null_model: true);
-                else
+                Console.WriteLine("Running Random walk [{0}] in mode [{1}] ...", r, mode);
+
+                Dictionary<int, double> tvd = new Dictionary<int, double>();
+                RandomWalk walk = new RandomWalk(temp_net, mode);
+                for (int t = 0; t < length; t++)
                 {
-                    Console.WriteLine("\nError: RWType {0} unknown", type);
-                    return;
+                    walk.Step();
+                    tvd[t] = walk.TVD;
                 }
 
                 Console.Write("Writing time series of total variation distance ...");
