@@ -237,6 +237,21 @@ namespace TemporalNetworks
             }
         }
 
+        public double GetMaxVisitationProb()
+        { 
+            return (double) _current_visitations.Values.Max() / (double) Time;
+        }
+
+        public double GetMinVisitationProb()
+        {
+            return (double)_current_visitations.Values.Min() / (double)Time;
+        }
+
+        public double GetVisitationProb(string node)
+        {
+            return (double) _current_visitations[node] / (double) Time;
+        }
+
         /// <summary>
         /// Computes the expected stationary distribution of a random walk in the weighted aggregate network
         /// NOTE: At present, this implementation only works correctly if the network is undirected!
