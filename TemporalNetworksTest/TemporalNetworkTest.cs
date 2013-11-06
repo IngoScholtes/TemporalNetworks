@@ -132,6 +132,20 @@ namespace TemporalNetworksTest
         }
 
         /// <summary>
+        ///A test for time reversal
+        ///</summary>
+        [TestMethod()]
+        public void TimeReversalTest()
+        {
+            TemporalNetwork test = ExampleData.GetTestNetwork();
+            test.ReduceToTwoPaths(true);
+
+            Assert.AreEqual(test.TwoPathCount, 10, "Number of paths in time-reversed temporal network is incorrect!");
+
+
+        }
+
+        /// <summary>
         /// A test for the save and load procedures
         /// </summary>
         [TestMethod()]

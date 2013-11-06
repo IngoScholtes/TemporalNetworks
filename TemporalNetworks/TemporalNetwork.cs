@@ -155,7 +155,7 @@ namespace TemporalNetworks
         /// </summary>
         /// <seealso cref="TwoPathsByNode"/>
         /// <seealso cref="AggregateNetwork"/>
-        public void ReduceToTwoPaths()
+        public void ReduceToTwoPaths(bool reverseTime = false)
         {
             _twoPathsByNode = new Dictionary<string, Dictionary<int,List<Tuple<string, string>>>>();
             _twoPathWeights = new Dictionary<string, double>();
@@ -164,7 +164,10 @@ namespace TemporalNetworks
 
             int prev_t = -1;
 
-            var ordered_time = Keys.OrderBy(k => k, new CompareInts());
+            IEnumerable<int> ordered_time = Keys.OrderBy(k => k, new CompareInts());
+
+            if (reverseTime)
+                ordered_time = ordered_time.Reverse();
 
             // Walk through time ... 
             foreach(int t in ordered_time)

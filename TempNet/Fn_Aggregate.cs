@@ -17,12 +17,15 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [weighted_aggregate_networks=false]");
+                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [weighted_aggregate_networks=false] [TimeReversal=false] [Directed=false]");
                 return;
             }
 
             string out_file = args[2];
             bool two_path = false;
+            bool timeReversal = false;
+            bool directed = false;
+
             int aggregationWindow = 1;
 
             if (args.Length >= 4)
@@ -31,14 +34,20 @@ namespace TempNet
             if (args.Length >= 5)
                 two_path = bool.Parse(args[4]);
 
+            if (args.Length >= 6)
+                timeReversal = bool.Parse(args[5]);
+
+            if (args.Length >= 7)
+                directed = bool.Parse(args[6]);
+
             if (!CmdlTools.PromptExistingFile(out_file))
             {
                 Console.WriteLine("User opted to exit.");
                 return;
             }
 
-            Console.Write("Reading temporal network as undirected...");
-            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected: true);
+            Console.Write("Reading temporal network ...");
+            TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected: !directed);
             Console.WriteLine(" done.");
 
             Console.WriteLine(temp_net.Length);
@@ -48,7 +57,7 @@ namespace TempNet
             Console.WriteLine(temp_net.Length);
 
             Console.Write("Reducing to two path networks ...");
-            temp_net.ReduceToTwoPaths();
+            temp_net.ReduceToTwoPaths(timeReversal);
             Console.WriteLine("done.");
 
             if (!two_path)

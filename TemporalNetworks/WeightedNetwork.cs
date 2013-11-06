@@ -486,6 +486,14 @@ namespace TemporalNetworks
             }
         }
 
+        public bool Edge(string v, string w)
+        {
+            if (!_successors.ContainsKey(v))
+                return false;
+            else 
+                return _successors[v].Contains(w);
+        }
+
         /// <summary>
         /// Returns the maximum weight of edges in the network
         /// </summary>

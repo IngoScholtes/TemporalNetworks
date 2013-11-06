@@ -69,6 +69,7 @@ namespace TemporalNetworks
         }
 
         private Dictionary<string, int> _current_visitations = null;
+        private Dictionary<string, int> _last_visits = null;
         private Dictionary<string, double> _stationary_dist = null;
         private TemporalNetwork _network = null;
 
@@ -89,10 +90,14 @@ namespace TemporalNetworks
             _network = network;
             rand = new Random();
             _current_visitations = new Dictionary<string, int>();
+            _last_visits = new Dictionary<string, int>();
 
             // Set visitations to 0
             foreach (string v in network.AggregateNetwork.Vertices)
                 _current_visitations[v] = 0;
+
+            foreach (string v in network.AggregateNetwork.Vertices)
+                _last_visits[v] = -1000;
 
             // Reduce first and second-order aggregate network to strongly connected component
             _network.AggregateNetwork.ReduceToLargestStronglyConnectedComponent();
@@ -204,6 +209,7 @@ namespace TemporalNetworks
 
                     CurrentEdge = new Tuple<string, string>(CurrentNode, next_node);
                     CurrentNode = next_node;
+                    _last_visits[CurrentNode] = Time;
                     _current_visitations[CurrentNode]++;
                     Time++;
 
@@ -229,12 +235,18 @@ namespace TemporalNetworks
 
                     CurrentEdge = next_edge;
                     CurrentNode = next_edge.Item2;
+                    _last_visits[CurrentNode] = Time;
                     _current_visitations[CurrentNode]++;
                     Time++;
                     break;
                 }
 
             }
+        }
+
+        public int GetLastVisit(string node)
+        {
+            return _last_visits[node];
         }
 
         public double GetMaxVisitationProb()
