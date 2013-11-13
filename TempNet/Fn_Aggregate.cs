@@ -17,7 +17,7 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [weighted_aggregate_networks=false] [TimeReversal=false] [Directed=false]");
+                Console.WriteLine("Usage: TempNet aggregate [temporal_network_file] [output_file] [aggregationWindow=1] [weighted_aggregate_networks=false] [Directed=false] [TimeReversal=false] [absoluteTime=false]");
                 return;
             }
 
@@ -25,6 +25,7 @@ namespace TempNet
             bool two_path = false;
             bool timeReversal = false;
             bool directed = false;
+            bool absoluteTime = false;
 
             int aggregationWindow = 1;
 
@@ -32,13 +33,16 @@ namespace TempNet
                 aggregationWindow = int.Parse(args[3]);
 
             if (args.Length >= 5)
-                two_path = bool.Parse(args[4]);
+                two_path = bool.Parse(args[4]);            
 
             if (args.Length >= 6)
-                timeReversal = bool.Parse(args[5]);
+                directed = bool.Parse(args[5]);
 
             if (args.Length >= 7)
-                directed = bool.Parse(args[6]);
+                timeReversal = bool.Parse(args[6]);
+
+            if (args.Length >= 8)
+                absoluteTime = bool.Parse(args[7]);
 
             if (!CmdlTools.PromptExistingFile(out_file))
             {
@@ -57,7 +61,7 @@ namespace TempNet
             Console.WriteLine(temp_net.Length);
 
             Console.Write("Reducing to two path networks ...");
-            temp_net.ReduceToTwoPaths(timeReversal);
+            temp_net.ReduceToTwoPaths(timeReversal, absoluteTime);
             Console.WriteLine("done.");
 
             if (!two_path)

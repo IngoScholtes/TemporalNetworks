@@ -155,7 +155,7 @@ namespace TemporalNetworks
         /// </summary>
         /// <seealso cref="TwoPathsByNode"/>
         /// <seealso cref="AggregateNetwork"/>
-        public void ReduceToTwoPaths(bool reverseTime = false)
+        public void ReduceToTwoPaths(bool reverseTime = false, bool absolute_time = false)
         {
             _twoPathsByNode = new Dictionary<string, Dictionary<int,List<Tuple<string, string>>>>();
             _twoPathWeights = new Dictionary<string, double>();
@@ -173,18 +173,22 @@ namespace TemporalNetworks
             foreach(int t in ordered_time)
             {
                 if (prev_t == -1)
-                    prev_t = t; // We skip the first time step and just set the prev_t index ... 
+                    ; // We skip the first time step and just set the prev_t index ...               
+                else if (absolute_time && prev_t < t - 1)
+                {
+                    ; // do nothing 
+                }  
                 else
                 {
-                    // N.B.: Only two-paths consisting of edges in time steps immediately following each other are found 
+                    // N.B.: Only two-paths consisting of edges in time steps immediately following each other are found
                     // N.B.: We also account for multiple edges happening at the same time, i.e. multiple two-paths can pass through a node at a given time t!
                     // N.B.: For three consecutive edges (a,b), (b,c), (c,d) , two two-paths (a,b,c) and (b,c,d) will be found
                     foreach (var in_edge in this[prev_t])
                     {
-                        foreach(var out_edge in this[t])
+                        foreach (var out_edge in this[t])
                         {
                             // In this case, we found the two_path (in_edge) -> (out_edge) = (s,v) -> (v,d)
-                            if(in_edge.Item2 == out_edge.Item1)
+                            if (in_edge.Item2 == out_edge.Item1)
                             {
                                 // Use notation from the paper
                                 string s = in_edge.Item1;
@@ -199,16 +203,16 @@ namespace TemporalNetworks
                                 indeg_v = (from x in this[prev_t].AsParallel() where x.Item2 == v select x).Count();
 
                                 //foreach (var edge in this[prev_t])
-                                 //   if (edge.Item2 == v)
-                                 //       indeg_v++;
+                                //   if (edge.Item2 == v)
+                                //       indeg_v++;
 
                                 outdeg_v = (from x in this[t].AsParallel() where x.Item1 == v select x).Count();
 
                                 //foreach (var edge in this[t])
-                                 //   if (edge.Item1 == v)
-                                  //      outdeg_v++;
+                                //   if (edge.Item1 == v)
+                                //      outdeg_v++;
 
-                                if(!_twoPathWeights.ContainsKey(two_path))
+                                if (!_twoPathWeights.ContainsKey(two_path))
                                     _twoPathWeights[two_path] = 0d;
 
                                 _twoPathWeights[two_path] += 1d / (indeg_v * outdeg_v);
@@ -221,28 +225,28 @@ namespace TemporalNetworks
                                 // Important: In the reduced temporal network, we only use edges belonging to two paths. Each edge is added only once, 
                                 // even if it belongs to several two paths (this is the case for continued two paths as well as for two paths with multiple edges
                                 // in one time step
-                                if(!two_path_edges[prev_t].Contains(in_edge))
+                                if (!two_path_edges[prev_t].Contains(in_edge))
                                     two_path_edges[prev_t].Add(in_edge);
-                                if(!two_path_edges[t].Contains(out_edge))
+                                if (!two_path_edges[t].Contains(out_edge))
                                     two_path_edges[t].Add(out_edge);
 
                                 // Add the identified two paths to the list of two paths passing through v at time t
                                 if (!_twoPathsByNode.ContainsKey(v))
-                                    _twoPathsByNode[v] = new Dictionary<int,List<Tuple<string, string>>>();
+                                    _twoPathsByNode[v] = new Dictionary<int, List<Tuple<string, string>>>();
                                 if (!_twoPathsByNode[v].ContainsKey(t))
                                     _twoPathsByNode[v][t] = new List<Tuple<string, string>>();
 
                                 if (!_twoPathsByStartTime.ContainsKey(prev_t))
                                     _twoPathsByStartTime[prev_t] = new List<string>();
 
-                                _twoPathsByNode[v][t].Add(new Tuple<string,string>(s,d));
+                                _twoPathsByNode[v][t].Add(new Tuple<string, string>(s, d));
                                 _twoPathsByStartTime[prev_t].Add(s + "," + v + "," + d);
-                                
+
                             }
                         }
-                    }                   
-                    prev_t = t;
-                }                
+                    }                    
+                }
+                prev_t = t;
             }
             
             // Replace the edges of the temporal network by those contributing to two paths
@@ -387,9 +391,6 @@ namespace TemporalNetworks
         {
             if (!this.ContainsKey(time))
                 this[time] = new List<Tuple<string, string>>();
-            /// TODO: Is this needed?
-            if (!this.ContainsKey(time+1))
-                this[time+1] = new List<Tuple<string, string>>();
             this[time].Add(new Tuple<string, string>(v, w));
 
             // Invalidate previously preprocessed data

@@ -126,23 +126,23 @@ namespace TemporalNetworksTest
             Assert.IsNotNull(actual);
 
             // Check whether all entries in the normalized betweenness preference matrix returned match the expected values
-            Assert.AreEqual(actual[index_pred["a"], index_succ["b"]], (2d / 11d) * (1d / 10d) );
-            Assert.AreEqual(actual[index_pred["b"], index_succ["b"]], (1d / 11d) * (1d / 10d) );
-            Assert.AreEqual(actual[index_pred["c"], index_succ["b"]], (6d / 11d) * (1d / 10d) );
-            Assert.AreEqual(actual[index_pred["f"], index_succ["b"]], (1d / 11d) * (1d / 10d));
-            Assert.AreEqual(actual[index_pred["g"], index_succ["b"]], (1d / 11d) * (1d / 10d));
+            Assert.AreEqual(actual[index_pred["a"], index_succ["b"]], (2d / 11d) * (1d / 11d) );
+            Assert.AreEqual(actual[index_pred["b"], index_succ["b"]], (1d / 11d) * (1d / 11d) );
+            Assert.AreEqual(actual[index_pred["c"], index_succ["b"]], (5.5d / 11d) * (1d / 11d) );
+            Assert.AreEqual(actual[index_pred["f"], index_succ["b"]], (2d / 11d) * (1d / 11d));
+            Assert.AreEqual(actual[index_pred["g"], index_succ["b"]], (0.5d / 11d) * (1d / 11d));
 
-            Assert.AreEqual(actual[index_pred["a"], index_succ["f"]], (2d / 11d) * (6d / 10d));
-            Assert.AreEqual(actual[index_pred["b"], index_succ["f"]], (1d / 11d) * (6d / 10d));
-            Assert.AreEqual(actual[index_pred["c"], index_succ["f"]], (6d / 11d) * (6d / 10d));
-            Assert.AreEqual(actual[index_pred["f"], index_succ["f"]], (1d / 11d) * (6d / 10d));
-            Assert.AreEqual(actual[index_pred["g"], index_succ["f"]], (1d / 11d) * (6d / 10d));
+            Assert.AreEqual(actual[index_pred["a"], index_succ["f"]], (2d / 11d) * (7d / 11d));
+            Assert.AreEqual(actual[index_pred["b"], index_succ["f"]], (1d / 11d) * (7d / 11d));
+            Assert.AreEqual(actual[index_pred["c"], index_succ["f"]], (5.5d / 11d) * (7d / 11d));
+            Assert.AreEqual(actual[index_pred["f"], index_succ["f"]], (2d / 11d) * (7d / 11d));
+            Assert.AreEqual(actual[index_pred["g"], index_succ["f"]], (0.5d / 11d) * (7d / 11d));
 
-            Assert.AreEqual(actual[index_pred["a"], index_succ["g"]], (2d / 11d) * (3d / 10d));
-            Assert.AreEqual(actual[index_pred["b"], index_succ["g"]], (1d / 11d) * (3d / 10d));
-            Assert.AreEqual(actual[index_pred["c"], index_succ["g"]], (6d / 11d) * (3d / 10d));
-            Assert.AreEqual(actual[index_pred["f"], index_succ["g"]], (1d / 11d) * (3d / 10d));
-            Assert.AreEqual(actual[index_pred["g"], index_succ["g"]], (1d / 11d) * (3d / 10d));
+            Assert.AreEqual(actual[index_pred["a"], index_succ["g"]], (2d / 11d) * (3d / 11d));
+            Assert.AreEqual(actual[index_pred["b"], index_succ["g"]], (1d / 11d) * (3d / 11d));
+            Assert.AreEqual(actual[index_pred["c"], index_succ["g"]], (5.5d / 11d) * (3d / 11d));
+            Assert.AreEqual(actual[index_pred["f"], index_succ["g"]], (2d / 11d) * (3d / 11d));
+            Assert.AreEqual(actual[index_pred["g"], index_succ["g"]], (0.5d / 11d) * (3d / 11d));
         }
 
 

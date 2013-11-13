@@ -78,7 +78,7 @@ namespace TemporalNetworksTest
             return temporal_net;
         }
 
-         /// <summary>
+        /// <summary>
         /// Returns a test network suitable for testing the AggregateWindow method
         /// </summary>
         /// <returns></returns>
@@ -88,6 +88,7 @@ namespace TemporalNetworksTest
 
             temporal_net.AddTemporalEdge(1, "a", "b");
             temporal_net.AddTemporalEdge(2, "a", "c");
+
             temporal_net.AddTemporalEdge(7, "c", "e");
             temporal_net.AddTemporalEdge(8, "c", "g");
             temporal_net.AddTemporalEdge(9, "g", "f");

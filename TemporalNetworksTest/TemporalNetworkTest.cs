@@ -31,6 +31,22 @@ namespace TemporalNetworksTest
             }
         }
 
+        [TestMethod()]
+        public void AbsoluteTimeTest()
+        {
+            TemporalNetwork test = ExampleData.GetTestNetwork3();
+
+            // Default behavior is relative time 
+            test.ReduceToTwoPaths();
+
+            Assert.IsTrue(test.TwoPathWeights.ContainsKey("a,c,e") && test.TwoPathWeights["a,c,e"] == 1);
+
+            test = ExampleData.GetTestNetwork3();
+            test.ReduceToTwoPaths(false, true);
+
+            Assert.IsFalse(test.TwoPathWeights.ContainsKey("a,c,e"));
+        }
+
         /// <summary>
         ///A test for AddTemporalEdge
         ///</summary>

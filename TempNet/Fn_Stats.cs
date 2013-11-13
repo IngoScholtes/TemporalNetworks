@@ -12,16 +12,20 @@ namespace TempNet
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Usage: TempNet stats [temporal_network_file] [aggregationWindow=1] [undirected=false]");
+                Console.WriteLine("Usage: TempNet stats [temporal_network_file] [aggregationWindow=1] [undirected=false] [absoluteTime=false]");
                 return;
             }
 
             bool undirected = false;
+            bool absoluteTime = false;
             int aggregationWindow = 1;
             if (args.Length >= 3)
                 aggregationWindow = Int32.Parse(args[2]);
             if (args.Length >= 4)
                 undirected = Boolean.Parse(args[3]);
+
+            if (args.Length >= 5)
+                absoluteTime = Boolean.Parse(args[4]);
 
             Console.Write("Reading temporal network as {0} network...", undirected?"undirected":"directed");
             TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected:undirected);
@@ -34,10 +38,10 @@ namespace TempNet
             Console.WriteLine("Number of nodes:                  \t{0}", temp_net.VertexCount);
             Console.WriteLine("Number of time steps:             \t{0}", temp_net.Length);
             Console.WriteLine("Number of interactions:           \t{0}", interactions_total);
-            Console.WriteLine("Highest granularity               \t{0} edges per time step", temp_net.MaxGranularity);
-            Console.WriteLine("Lowest granularity                \t{0} edges per time step", temp_net.MinGranularity);
-            
-            temp_net.AggregateTime(aggregationWindow);            
+            Console.WriteLine("Highest granularity               \t{0} edges per time step", temp_net.MaxGranularity);            
+            Console.WriteLine("Lowest granularity                \t{0} edges per time step", temp_net.MinGranularity);            
+            temp_net.AggregateTime(aggregationWindow);
+            temp_net.ReduceToTwoPaths(false, absoluteTime);
 
             Console.WriteLine("Fraction of two-path interactions \t{0:0.00}", (double) temp_net.AggregateNetwork.CumulativeWeight/(double) interactions_total);
 
