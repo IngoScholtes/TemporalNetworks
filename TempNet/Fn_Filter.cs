@@ -12,35 +12,60 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet filter [temporal_network_original] [filter_file] [temporal_network_new] [undirected=true]");
+                Console.WriteLine("Usage: TempNet scc [temporal_network_original] [temporal_network_new] [undirected=false] [absolutTime=false]");
                 return;
             }
 
             string file_orig = args[1];
-            string filter = args[2];
-            string file_new = args[3];
+            string file_new = args[2];
 
-            bool undirected = true;
+            bool undirected = false;
+
+            bool absoluteTime = false;
+
+            if (args.Length >= 4)
+                undirected = Boolean.Parse(args[3]);
 
             if (args.Length >= 5)
-                undirected = Boolean.Parse(args[4]);
+                absoluteTime = Boolean.Parse(args[4]);
 
             Console.Write("Reading temporal network as {0} network...", undirected?"undirected":"directed");
             TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(file_orig, undirected:undirected);
             Console.WriteLine("done.");
 
-            string[] filtered_edges = System.IO.File.ReadAllLines(filter);
+            Console.Write("Extracting two paths and reducing original sequence...");
+            temp_net.ReduceToTwoPaths(false, absoluteTime);
+            Console.WriteLine("done.");
 
-            foreach (string x in filtered_edges)
+            Console.Write("Building second order aggregate network...");
+            WeightedNetwork net = temp_net.SecondOrderAggregateNetwork;
+            Console.WriteLine("done.");
+
+            Console.Write("Extracting largest SCC...");
+            net.ReduceToLargestStronglyConnectedComponent();
+            Console.WriteLine("done.");
+
+            Console.Write("SCC has {0} nodes", net.VertexCount);
+
+            Console.WriteLine("Filtering disconnected edges in temporal network ... ");
+            foreach (var t in temp_net.Keys)
             {
-                if (x.Contains(";"))
+                // Iterate through all edges in this time step 
+                foreach (var edge in temp_net[t].ToArray())
                 {
-                    string[] comps = x.Split(';');
-                    temp_net.Remove(new Tuple<string, string>(comps[0], comps[1]));
+                    // If this edge is not a node in the second order network 
+                    if (!net.ContainsKey(edge) || net[edge] == 0d)
+                        temp_net[t].Remove(edge);
+                    else
+                        Console.WriteLine("Kept edge {0}->{1}", edge.Item1, edge.Item2);
+
                 }
             }
+            Console.WriteLine("done.");
 
+            Console.Write("Saving new temporal network ... ");
             TemporalNetwork.SaveToFile(file_new, temp_net);
+            Console.WriteLine("done.");
 
         }
     }

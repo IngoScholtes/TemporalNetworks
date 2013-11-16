@@ -212,7 +212,7 @@ namespace TemporalNetworks
 
         private void RemoveVertex(string node)
         {
-            // Set all weights to zer
+            // Set all weights to zero
             foreach (var edge in this.Keys.ToArray())
             {
                 if(edge.Item1 == node || edge.Item2 == node)

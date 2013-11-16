@@ -107,8 +107,12 @@ namespace TemporalNetworks
         }
 
         /// <summary>
+        /// This method performs a time aggregation on the temporal network. A network of the form 
+        /// (11,a,b), (12,b,c), (24,c,d), (28,d,e), (44, e, f), (47, f, g)
+        /// with an aggregation window of 10 will be converted to the following form: 
+        /// (0,a,b), (0,b,c), (1,c,d), (1, d, e), (3, e, f), (3, f, g)
         /// </summary>
-        /// <param name="aggregationSize"></param>
+        /// <param name="aggregationSize">Number of discrete consecutive time steps to aggregate into a single one</param>
         public void AggregateTime(int aggregationWindow = 1)
         {
             if (aggregationWindow == 1)
@@ -117,8 +121,10 @@ namespace TemporalNetworks
             Dictionary<int, List<Tuple<string, string>>> new_dict = new Dictionary<int, List<Tuple<string, string>>>();
             int min = Keys.Min();
 
+            // Consider all time stamps in the original time-stamped sequence
             foreach (var t in Keys)
             {
+                // compute the time stamp after the aggregation 
                 int new_t = (t - min) / aggregationWindow;
                 if(!new_dict.ContainsKey(new_t))
                     new_dict[new_t] = new List<Tuple<string,string>>();
@@ -134,8 +140,6 @@ namespace TemporalNetworks
                     if (!this[t].Contains(edge))
                         this[t].Add(edge);
             }
-
-            ReduceToTwoPaths();
         }
 
         public class CompareInts : IComparer<int> {
@@ -155,7 +159,7 @@ namespace TemporalNetworks
         /// </summary>
         /// <seealso cref="TwoPathsByNode"/>
         /// <seealso cref="AggregateNetwork"/>
-        public void ReduceToTwoPaths(bool reverseTime = false, bool absolute_time = false)
+        public void ReduceToTwoPaths(bool reverseTime = false, bool absolute_time = false, int delta=1)
         {
             _twoPathsByNode = new Dictionary<string, Dictionary<int,List<Tuple<string, string>>>>();
             _twoPathWeights = new Dictionary<string, double>();
@@ -174,7 +178,7 @@ namespace TemporalNetworks
             {
                 if (prev_t == -1)
                     ; // We skip the first time step and just set the prev_t index ...               
-                else if (absolute_time && prev_t < t - 1)
+                else if (absolute_time && prev_t < t - delta)
                 {
                     ; // do nothing 
                 }  
@@ -202,15 +206,7 @@ namespace TemporalNetworks
 
                                 indeg_v = (from x in this[prev_t].AsParallel() where x.Item2 == v select x).Count();
 
-                                //foreach (var edge in this[prev_t])
-                                //   if (edge.Item2 == v)
-                                //       indeg_v++;
-
                                 outdeg_v = (from x in this[t].AsParallel() where x.Item1 == v select x).Count();
-
-                                //foreach (var edge in this[t])
-                                //   if (edge.Item1 == v)
-                                //      outdeg_v++;
 
                                 if (!_twoPathWeights.ContainsKey(two_path))
                                     _twoPathWeights[two_path] = 0d;
@@ -530,6 +526,10 @@ namespace TemporalNetworks
             return base.GetHashCode();
         }
 
+        /// <summary>
+        /// Removes undirected edges
+        /// </summary>
+        /// <param name="tuple"></param>
         public void Remove(Tuple<string, string> tuple)
         {
             foreach (int t in this.Keys)

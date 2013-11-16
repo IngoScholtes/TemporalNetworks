@@ -22,7 +22,7 @@ namespace TempNet
                 Console.WriteLine("\t\t tikz \t\t Generate a tikz visualization of a time-unfolded temporal network");
                 Console.WriteLine("\t\t visualize \t\t Generate a bitmap visualization of a time-unfolded temporal network");
                 Console.WriteLine("\t\t example \t Create a simple example for a temporal network");
-                Console.WriteLine("\t\t filter \t Removes edges from a temporal network");
+                Console.WriteLine("\t\t scc \t Removes all edges that do not belong to the largest strongly connected component of the second order aggregate network");
                 Console.WriteLine("\t\t match \t\t Check whether the aggregated version of two temporal networks are identical");
                 Console.WriteLine("\t\t aggregate \t Create a weighted aggregate network from a temporal network");
                 Console.WriteLine("\t\t shuffle \t Shuffle edges or two paths of a temporal network");
@@ -54,7 +54,7 @@ namespace TempNet
                 Fn_Shuffle.Run(args);
             else if (function == "T2")
                 Fn_T2.Run(args);
-            else if (function == "filter")
+            else if (function == "scc")
                 Fn_Filter.Run(args);
             else if (function == "visualize")
                 Fn_Visualize.Run(args);

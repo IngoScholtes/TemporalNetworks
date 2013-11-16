@@ -53,12 +53,12 @@ namespace TempNet
             Console.Write("Reading temporal network ...");
             TemporalNetwork temp_net = TemporalNetwork.ReadFromFile(args[1], undirected: !directed);
             Console.WriteLine(" done.");
+            Console.WriteLine("Number of time steps = {0}", temp_net.Length);
 
-            Console.WriteLine(temp_net.Length);
             Console.Write("Applying agggregation window [{0}] ...", aggregationWindow);
             temp_net.AggregateTime(aggregationWindow);
             Console.WriteLine("done.");
-            Console.WriteLine(temp_net.Length);
+            Console.WriteLine("Number of time steps = {0}", temp_net.Length);
 
             Console.Write("Reducing to two path networks ...");
             temp_net.ReduceToTwoPaths(timeReversal, absoluteTime);
