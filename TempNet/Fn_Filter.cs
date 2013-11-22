@@ -45,7 +45,7 @@ namespace TempNet
             net.ReduceToLargestStronglyConnectedComponent();
             Console.WriteLine("done.");
 
-            Console.Write("SCC has {0} nodes", net.VertexCount);
+            Console.WriteLine("SCC has {0} nodes", net.VertexCount);
 
             Console.WriteLine("Filtering disconnected edges in temporal network ... ");
             foreach (var t in temp_net.Keys)
@@ -53,12 +53,10 @@ namespace TempNet
                 // Iterate through all edges in this time step 
                 foreach (var edge in temp_net[t].ToArray())
                 {
-                    // If this edge is not a node in the second order network 
-                    if (!net.ContainsKey(edge) || net[edge] == 0d)
-                        temp_net[t].Remove(edge);
-                    else
-                        Console.WriteLine("Kept edge {0}->{1}", edge.Item1, edge.Item2);
-
+                    string node = "(" + edge.Item1 + ";" + edge.Item2 + ")";
+                    // If this edge is not a node in the second order network
+                    if (!net.Vertices.Contains(node))
+                        temp_net[t].Remove(edge);                  
                 }
             }
             Console.WriteLine("done.");

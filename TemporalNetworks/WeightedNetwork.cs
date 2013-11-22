@@ -50,7 +50,7 @@ namespace TemporalNetworks
                 foreach (Tuple<string, string> edge in temp_net[t])
                     weighted_net.AddEdge(edge.Item1, edge.Item2);
             return weighted_net;
-        }
+        } 
 
         /// <summary>
         /// Returns all vertices present in this network
