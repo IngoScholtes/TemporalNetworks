@@ -286,6 +286,49 @@ namespace TemporalNetworks
         }
 
         /// <summary>
+        /// Reads a temporal network from a file containing lines with trigrams a,b,c 
+        /// </summary>
+        /// <param name="path">The path to the data file</param>
+        /// <returns>A temporal network instance</returns>
+        public static TemporalNetwork FromTrigramsFile(string path)
+        {
+            TemporalNetwork temp_net = new TemporalNetwork();
+
+            string[] lines = System.IO.File.ReadAllLines(path);
+
+            // if empty
+            if (lines.Length == 0)
+                return temp_net;
+
+            char[] split_chars = new char[] { ' ', '\t', ';', ',' };
+            char split_char = ' ';
+
+            // detect split character
+            string[] line = null;
+            foreach (char c in split_chars)
+            {
+                line = lines[0].Split(c);
+                if (line.Length == 3)
+                {
+                    split_char = c;
+                    break;
+                }
+            }
+
+            // Read trigrams and generate temporal network representation
+            int time = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string[] components = lines[i].Split(split_char);
+                temp_net.AddTemporalEdge(time, components[0], components[1]);
+                temp_net.AddTemporalEdge(time+1, components[1], components[2]);
+                time = time + 3;
+            }
+
+            return temp_net;
+        }
+
+        /// <summary>
         /// Reads an edge sequence from a file containing ordered edges and creates a temporal network instance. The file is 
         /// assumed to have one line per edge, each possibly consisting of several colums and separated by a special delimiter character. 
         /// The caller can specify which (zero-based) column number indicate the source and the target of an interaction. If no parameters 
@@ -300,6 +343,12 @@ namespace TemporalNetworks
         /// <returns>An instance of a temporal network corresponding to the input sequence</returns>
         public static TemporalNetwork ReadFromFile(string path, bool undirected = false)
         {
+            System.IO.FileInfo fi = new System.IO.FileInfo(path);
+
+            if (fi.Extension == ".3gram")
+                return FromTrigramsFile(path);
+
+
             TemporalNetwork temp_net = new TemporalNetwork();
             
             // Read all data from file 
