@@ -79,6 +79,39 @@ namespace TemporalNetworksTest
         }
 
         /// <summary>
+        /// Returns a second test network
+        /// </summary>
+        /// <returns></returns>
+        public static TemporalNetwork GetTestNetwork_weighted_1()
+        {
+            TemporalNetwork temporal_net = new TemporalNetwork();
+
+            temporal_net.AddTemporalEdge(1, "a", "b");
+            temporal_net.AddTemporalEdge(2, "b", "c");            
+
+            temporal_net.AddTemporalEdge(4, "a", "b");
+            temporal_net.AddTemporalEdge(5, "b", "c");
+
+            temporal_net.AddTemporalEdge(7, "a", "b");
+            temporal_net.AddTemporalEdge(8, "b", "a");
+
+            return temporal_net;
+        }
+
+        public static TemporalNetwork GetTestNetwork_weighted_2()
+        {
+            TemporalNetwork temporal_net = new TemporalNetwork();
+
+            temporal_net.AddTemporalEdge(1, "a", "b", 2);
+            temporal_net.AddTemporalEdge(2, "b", "c", 2);
+
+            temporal_net.AddTemporalEdge(4, "a", "b");
+            temporal_net.AddTemporalEdge(5, "b", "a");
+
+            return temporal_net;
+        }
+
+        /// <summary>
         /// Returns a test network suitable for testing the AggregateWindow method
         /// </summary>
         /// <returns></returns>

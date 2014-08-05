@@ -145,7 +145,6 @@ namespace TemporalNetworksTest
             Assert.AreEqual(actual[index_pred["g"], index_succ["g"]], (0.5d / 11d) * (3d / 11d));
         }
 
-
         [TestMethod()]
         public void NoBWPTest()
         {

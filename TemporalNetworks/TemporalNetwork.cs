@@ -29,6 +29,9 @@ namespace TemporalNetworks
         Dictionary<string, double> _twoPathWeights = null;
         Dictionary<int, List<string>> _twoPathsByStartTime = null;
 
+        // This dictionary contains the weights of *temporal* edges
+        Dictionary<int, int> _tempEdgeWeights = null;
+
         /// <summary>
         /// The two paths of all nodes in the temporal network
         /// </summary>
@@ -211,7 +214,9 @@ namespace TemporalNetworks
                                 if (!_twoPathWeights.ContainsKey(two_path))
                                     _twoPathWeights[two_path] = 0d;
 
-                                _twoPathWeights[two_path] += 1d / (indeg_v * outdeg_v);
+                                double w = _tempEdgeWeights.ContainsKey(t)? _tempEdgeWeights[t] : 1d;
+
+                                _twoPathWeights[two_path] += w / (indeg_v * outdeg_v);
 
                                 if (!two_path_edges.ContainsKey(prev_t))
                                     two_path_edges[prev_t] = new List<Tuple<string, string>>();
@@ -300,7 +305,7 @@ namespace TemporalNetworks
         /// <returns>An instance of a temporal network corresponding to the input sequence</returns>
         public static TemporalNetwork ReadFromFile(string path, bool undirected = false)
         {
-            TemporalNetwork temp_net = new TemporalNetwork();
+            TemporalNetwork temp_net = new TemporalNetwork();         
             
             // Read all data from file 
             string[] lines = System.IO.File.ReadAllLines(path);
@@ -332,6 +337,7 @@ namespace TemporalNetworks
             int time_ix = -1;
             int source_ix = -1;
             int target_ix = -1;
+            int weight_ix = -1;
             for (int i = 0; i < header.Length; i++)
                 if (header[i] == "time")
                     time_ix = i;
@@ -339,6 +345,8 @@ namespace TemporalNetworks
                     source_ix = i;
                 else if (header[i] == "node2" || header[i] == "target")
                     target_ix = i;
+                else if (header[i] == "count" || header[i] == "weight")
+                    weight_ix = i;
 
             // If there is no source and target column
             if (source_ix < 0 || target_ix < 0)
@@ -350,10 +358,11 @@ namespace TemporalNetworks
                 {
                     // If there is no explicit time, just consider each edge occuring at consecutive time steps
                     int t = time_ix >=0 ? int.Parse(components[time_ix]) : i;
-
-                    temp_net.AddTemporalEdge(t, components[source_ix], components[target_ix]);
+                    // if there is no explicit weight, just consider each edge occuring with weight one
+                    int weight = weight_ix >= 0 ? int.Parse(components[weight_ix]) : 1;
+                    temp_net.AddTemporalEdge(t, components[source_ix], components[target_ix], weight);
                     if (undirected)
-                        temp_net.AddTemporalEdge(t, components[target_ix], components[source_ix]);
+                        temp_net.AddTemporalEdge(t, components[target_ix], components[source_ix], weight);
                 }
 
             }
@@ -383,11 +392,12 @@ namespace TemporalNetworks
         /// </summary>
         /// <param name="v">the source node of an edge</param>
         /// <param name="w">the target node of an edge</param>
-        public void AddTemporalEdge(int time, string v, string w)
+        public void AddTemporalEdge(int time, string v, string w, int weight=1)
         {
             if (!this.ContainsKey(time))
                 this[time] = new List<Tuple<string, string>>();
             this[time].Add(new Tuple<string, string>(v, w));
+            _tempEdgeWeights[time] = weight;
 
             // Invalidate previously preprocessed data
             _cachedWeightedNetwork = null;
@@ -542,6 +552,11 @@ namespace TemporalNetworks
                 if (this[t].Count == 0)
                     this[t].Add(new Tuple<string, string>("dummy_" + t, "dummy_" + t));
             }
+        }
+
+        public TemporalNetwork() : base()
+        {
+            _tempEdgeWeights = new Dictionary<int, int>();
         }
     }
 }
