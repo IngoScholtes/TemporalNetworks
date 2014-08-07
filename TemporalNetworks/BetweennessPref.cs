@@ -193,7 +193,7 @@ namespace TemporalNetworks
         /// <param name="x">The node for which to compute betweenness preference</param>
         /// <param name="P">The betweenness preference matrix based on which betw. pref. will be computed</param>
         /// <returns>The betweenness preference, defined as the mutual information of the source and target of two-paths</returns>
-        public static double GetBetweennessPref(WeightedNetwork aggregate_net, string x, double[,] P)
+        public static double GetBetweennessPref(WeightedNetwork aggregate_net, string x, double[,] P, bool normalized=false)
         {
             // If the network is empty, just return zero
             if (aggregate_net.VertexCount == 0)
@@ -226,13 +226,25 @@ namespace TemporalNetworks
                 marginal_s[s] = P_s;
             }
 
+            double H_s = Entropy(marginal_s);
+            double H_d = Entropy(marginal_s);
+
             // Here we just compute equation (4) of the paper ... 
             for (int s = 0; s < indeg; s++)
                 for (int d = 0; d < outdeg; d++)                    
                     if (P[s, d] != 0) // 0 * Log(0)  = 0
                         // Mutual information
                         I += P[s, d] * Math.Log(P[s, d] / (marginal_s[s] * marginal_d[d]), 2d);
-            return I;
+            
+            return normalized?I/(H_s+H_d):I;
+        }
+
+        private static double Entropy(double[] marginal_s)
+        {
+            double H = 0d;
+            foreach (double p in marginal_s)
+                H += Math.Log(p) * p;
+            return -H;
         }
 
         /// <summary>
@@ -241,7 +253,7 @@ namespace TemporalNetworks
         /// <param name="temp_net">The temporal network for which to compute betweenness preference</param>
         /// <param name="x">The node for which to compute betweenness preference</param>
         /// <returns>The betweenness preference, defined as the mutual information of the source and target of two-paths</returns>
-        public static double GetBetweennessPref(TemporalNetwork temp_net, string x)
+        public static double GetBetweennessPref(TemporalNetwork temp_net, string x, bool normalized = false)
         {
             // This will be used to store the index mappings in the betweenness preference matrix
             Dictionary<string, int> index_pred;
@@ -250,7 +262,7 @@ namespace TemporalNetworks
             // Compute the normalized betweenness preference matrix of x according to equation (2) and (3)
             double[,] P = GetBetweennessPrefMatrix(temp_net, x, out index_pred, out index_succ);
 
-            return GetBetweennessPref(temp_net.AggregateNetwork, x, P);
+            return GetBetweennessPref(temp_net.AggregateNetwork, x, P, normalized);
         }
     }
 }
