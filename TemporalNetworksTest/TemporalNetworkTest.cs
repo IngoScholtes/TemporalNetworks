@@ -78,6 +78,20 @@ namespace TemporalNetworksTest
         }
 
         /// <summary>
+        /// A test for the handling of temporal edge weights/counts
+        /// </summary>
+        [TestMethod()]
+        public void WeightTest()
+        {
+
+            TemporalNetwork net1 = ExampleData.GetTestNetwork_weighted_1();
+            TemporalNetwork net2 = ExampleData.GetTestNetwork_weighted_2();
+
+            Assert.AreEqual(net1.TwoPathWeights["a,b,c"], net2.TwoPathWeights["a,b,c"]);
+            Assert.AreEqual(net1.TwoPathWeights["a,b,a"], net2.TwoPathWeights["a,b,a"]);
+        }
+
+        /// <summary>
         ///A test for Preprocess
         ///</summary>
         [TestMethod()]

@@ -18,7 +18,7 @@ namespace TempNet
         {
             if (args.Length < 3)
             {
-                Console.WriteLine("Usage: TempNet distribution [temporal_network_file] [output_file] [aggregationWndow=1] [undirected=false]");
+                Console.WriteLine("Usage: TempNet distribution [temporal_network_file] [output_file] [aggregationWndow=1] [undirected=false] [normalized=false]");
                 return;
             }
             string out_file = args[2];
@@ -30,11 +30,15 @@ namespace TempNet
             }
 
             bool undirected = false;
+            bool normalized = false;
+
             int aggregationWindow = 1;            
             if (args.Length >= 4)
                 aggregationWindow = int.Parse(args[3]);
             if (args.Length >= 5)
                 undirected = Boolean.Parse(args[4]);
+            if (args.Length >= 6)
+                normalized = Boolean.Parse(args[5]);
 
 
             Console.Write("Reading temporal network as {0} network...", undirected ? "undirected" : "directed");
@@ -62,7 +66,7 @@ namespace TempNet
             Parallel.ForEach<string>(temp_net.AggregateNetwork.Vertices, v =>
 #endif
             {
-                double betweennessPref = BetweennessPref.GetBetweennessPref(temp_net, v);
+                double betweennessPref = BetweennessPref.GetBetweennessPref(temp_net, v, normalized);
 
                 // Synchronized access to file and to counters ... 
                 if(temp_net.AggregateNetwork.GetIndeg(v)>0 && temp_net.AggregateNetwork.GetOutdeg(v)>0)
