@@ -227,7 +227,7 @@ namespace TemporalNetworks
             }
 
             double H_s = Entropy(marginal_s);
-            double H_d = Entropy(marginal_s);
+            double H_d = Entropy(marginal_d);
 
             // Here we just compute equation (4) of the paper ... 
             for (int s = 0; s < indeg; s++)
@@ -236,14 +236,14 @@ namespace TemporalNetworks
                         // Mutual information
                         I += P[s, d] * Math.Log(P[s, d] / (marginal_s[s] * marginal_d[d]), 2d);
             
-            return normalized?I/(H_s+H_d):I;
+            return normalized?I/Math.Min(H_s,H_d):I;
         }
 
         private static double Entropy(double[] marginal_s)
         {
             double H = 0d;
             foreach (double p in marginal_s)
-                H += Math.Log(p) * p;
+                H += Math.Log(p,2d) * p;
             return -H;
         }
 
